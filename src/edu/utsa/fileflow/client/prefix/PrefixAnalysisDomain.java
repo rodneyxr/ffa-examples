@@ -4,22 +4,29 @@ import edu.utsa.fileflow.analysis.AnalysisDomain;
 
 public class PrefixAnalysisDomain extends AnalysisDomain {
 
+	private static final PrefixAnalysisDomain TOP = new PrefixAnalysisDomain();
+	private static final PrefixAnalysisDomain BOTTOM = new PrefixAnalysisDomain();
+	static {
+		TOP.text = "*";
+		BOTTOM.text = "";
+	}
+
+	String text;
+
 	@Override
-	public AnalysisDomain merge(AnalysisDomain domain) {
+	public PrefixAnalysisDomain merge(AnalysisDomain domain) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public AnalysisDomain top() {
-		// TODO Auto-generated method stub
-		return null;
+	public PrefixAnalysisDomain top() {
+		return TOP.clone();
 	}
 
 	@Override
-	public AnalysisDomain bottom() {
-		// TODO Auto-generated method stub
-		return null;
+	public PrefixAnalysisDomain bottom() {
+		return BOTTOM.clone();
 	}
 
 	@Override
@@ -29,9 +36,10 @@ public class PrefixAnalysisDomain extends AnalysisDomain {
 	}
 
 	@Override
-	public AnalysisDomain clone() {
-		// TODO Auto-generated method stub
-		return null;
+	public PrefixAnalysisDomain clone() {
+		PrefixAnalysisDomain domain = new PrefixAnalysisDomain();
+		domain.text = text;
+		return domain;
 	}
 
 }
