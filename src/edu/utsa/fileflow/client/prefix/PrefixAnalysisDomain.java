@@ -1,5 +1,7 @@
 package edu.utsa.fileflow.client.prefix;
 
+import java.util.HashMap;
+
 import edu.utsa.fileflow.analysis.AnalysisDomain;
 
 public class PrefixAnalysisDomain extends AnalysisDomain {
@@ -7,11 +9,11 @@ public class PrefixAnalysisDomain extends AnalysisDomain {
 	private static final PrefixAnalysisDomain TOP = new PrefixAnalysisDomain();
 	private static final PrefixAnalysisDomain BOTTOM = new PrefixAnalysisDomain();
 	static {
-		TOP.text = "*";
-		BOTTOM.text = "";
+		TOP.table = null;
+		BOTTOM.table = new HashMap<>();
 	}
 
-	String text;
+	protected HashMap<String, String> table = new HashMap<>();
 
 	@Override
 	public PrefixAnalysisDomain merge(AnalysisDomain domain) {
@@ -38,7 +40,7 @@ public class PrefixAnalysisDomain extends AnalysisDomain {
 	@Override
 	public PrefixAnalysisDomain clone() {
 		PrefixAnalysisDomain domain = new PrefixAnalysisDomain();
-		domain.text = text;
+		table.putAll(domain.table);
 		return domain;
 	}
 
