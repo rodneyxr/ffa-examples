@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 import edu.utsa.fileflow.analysis.AnalysisDomain;
 
-public class PrefixAnalysisDomain extends AnalysisDomain {
+public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 
 	private static final PrefixAnalysisDomain TOP = new PrefixAnalysisDomain();
 	private static final PrefixAnalysisDomain BOTTOM = new PrefixAnalysisDomain();
@@ -13,11 +13,33 @@ public class PrefixAnalysisDomain extends AnalysisDomain {
 		BOTTOM.table = new HashMap<>();
 	}
 
-	protected HashMap<String, String> table = new HashMap<>();
+	// map containing the variable/value pairs
+	HashMap<String, PrefixItem> table = new HashMap<>();
 
 	@Override
-	public PrefixAnalysisDomain merge(AnalysisDomain domain) {
-		// TODO Auto-generated method stub
+	public PrefixAnalysisDomain merge(PrefixAnalysisDomain domain) {
+		// x = 'abc'
+		// y = 'ac'
+		// prefix = 'a'
+		// cut to common prefix
+		// ab > abab*
+
+		// TODO: implement this method
+
+		HashMap<String, PrefixItem> t1 = new HashMap<>(table);
+		HashMap<String, PrefixItem> t2 = new HashMap<>(domain.table);
+		for (String k : t1.keySet()) {
+			PrefixItem v1 = t1.remove(k);
+			PrefixItem v2 = t2.remove(k);
+
+			// if variable only exists in v1 then prefix remains the same
+			// but if it exists in v1 and v2 then cut to common prefix
+			if (v2 != null) {
+				// cut v1 and v2 to common prefix
+				
+			}
+		}
+
 		return null;
 	}
 
@@ -32,8 +54,8 @@ public class PrefixAnalysisDomain extends AnalysisDomain {
 	}
 
 	@Override
-	public int compareTo(AnalysisDomain o) {
-		// TODO Auto-generated method stub
+	public int compareTo(PrefixAnalysisDomain other) {
+		// TODO: SMALLER | EQUAL | LARGER | UNDEFINED
 		return 0;
 	}
 
