@@ -5,24 +5,29 @@ public class PrefixItem {
 	// the beginning of the string
 	String prefix;
 
-	// the rest of the string after the prefix
-	String tail;
-
-	// true if tail can be any. ex: tail is *
-	boolean hasAny;
+	// true if anything after the prefix is unknown. ex: 'abc*'
+	private boolean unknown;
 
 	public PrefixItem(String prefix) {
 		this.prefix = prefix;
-		this.tail = "";
-		this.hasAny = false;
+		this.unknown = false;
 	}
 
-	public void prependPrefix(String prefix) {
-
-	}
-
+	/**
+	 * Concatenates the PrefixItem parameter to the end of the invoking
+	 * PrefixItem. If this prefix is in the form of 'abc*', this method will
+	 * have no effect since anything after 'abc' is unknown.
+	 * 
+	 * @param other
+	 *            The other PrefixItem to concat to this object.
+	 * @return this object for chaining methods.
+	 */
 	public PrefixItem concat(PrefixItem other) {
-		this.prefix = prefix + tail + other.prefix + other.tail;
+		if (!unknown) {
+			this.prefix = prefix + other.prefix;
+			if (other.unknown)
+				this.unknown = true;
+		}
 		return this;
 	}
 
@@ -55,7 +60,9 @@ public class PrefixItem {
 
 	@Override
 	public String toString() {
-		return prefix + tail;
+		if (unknown)
+			return prefix + "*";
+		return prefix;
 	}
 
 }
