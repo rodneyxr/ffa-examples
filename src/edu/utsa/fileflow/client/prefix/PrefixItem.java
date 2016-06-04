@@ -14,6 +14,18 @@ public class PrefixItem {
 	}
 
 	/**
+	 * Sets this objects prefix and toggles unknown to true since changing the
+	 * prefix implies that anything after prefix is unknown.
+	 * 
+	 * @param prefix
+	 *            The new prefix to give to this object.
+	 */
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
+		unknown = true;
+	}
+
+	/**
 	 * Concatenates the PrefixItem parameter to the end of the invoking
 	 * PrefixItem. If this prefix is in the form of 'abc*', this method will
 	 * have no effect since anything after 'abc' is unknown.

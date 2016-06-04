@@ -17,27 +17,35 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 	HashMap<String, PrefixItem> table = new HashMap<>();
 
 	@Override
-	public PrefixAnalysisDomain merge(PrefixAnalysisDomain domain) {
+	public PrefixAnalysisDomain merge(PrefixAnalysisDomain other) {
 		// x = 'abc'
 		// y = 'ac'
 		// prefix = 'a'
 		// cut to common prefix
 		// ab > abab*
 
-		HashMap<String, PrefixItem> t1 = new HashMap<>(domain.table);
-		HashMap<String, PrefixItem> t2 = new HashMap<>(table);
+		// if is bottom just return
+		if (this.table.isEmpty())
+			return this;
 
-		for (String k : t1.keySet()) {
-			PrefixItem v1 = t1.get(k);
-			PrefixItem v2 = t2.remove(k);
+		// add (merge) everything in other table to this table
+		other.table.forEach((k, v2) -> {
+			PrefixItem v1 = this.table.get(k);
 
-			// if variable only exists in v1 then prefix remains the same
-			// but if it exists in v1 and v2 then cut to common prefix
-			if (v2 != null) {
-				// cut v1 and v2 to common prefix
-				// TODO: implement this method
+			// if item is only in other table
+			if (v1 == null) {
+				// just add it to this table
+				System.out.printf("Adding '%s' to this table\n", v2);
+				this.table.put(k, v2);
+			} else {
+				// item exists in both, so set this prefix to the LCP
+				String lcp = PrefixItem.longestCommonPrefix(v1.prefix, v2.prefix);
+				if (lcp.length() != v1.prefix.length()) {
+					v1.setPrefix(lcp);
+					System.out.printf("['%s' , '%s'] => '%s'\n", v1.prefix, v2.prefix, v1);
+				}
 			}
-		}
+		});
 
 		return this;
 	}

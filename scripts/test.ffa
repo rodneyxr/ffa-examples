@@ -1,2 +1,5 @@
- $x0='abc';
- $x0='ac';
+$x0='abc';
+$x0='ac';
+if (other) {
+	$x0 = 'acd';
+} 
