@@ -12,12 +12,13 @@ public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
 
 	@Override
 	public PrefixAnalysisDomain onFinish(PrefixAnalysisDomain domain) {
-		domain.table.forEach((k, v) -> System.out.println(k + " : " + v));
+		// domain.table.forEach((k, v) -> System.out.println(k + " : " + v));
 		return domain;
 	}
-	
+
 	@Override
 	public PrefixAnalysisDomain onAfter(PrefixAnalysisDomain domain, FlowPointContext context) {
+		domain.table.forEach((k, v) -> System.out.println(k + " : " + v));
 		System.out.println("==========================================================");
 		return super.onAfter(domain, context);
 	}
