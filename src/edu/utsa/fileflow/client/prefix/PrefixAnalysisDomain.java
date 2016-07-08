@@ -26,6 +26,8 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 
 		// if is bottom just return
 		if (this.table.isEmpty()) {
+			// this.table.putAll(other.table);
+			// return this.clone();
 			return this;
 		}
 
@@ -44,7 +46,8 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 				String lcp = PrefixItem.longestCommonPrefix(v1.prefix, v2.prefix);
 				if (!lcp.equals(v1.prefix)) {
 					v1.setPrefix(lcp);
-					System.out.printf("['%s' , '%s'] => '%s'\n", v1.prefix, v2.prefix, v1);
+					System.out.printf("(%s.java): ['%s' , '%s'] => '%s'\n", this.getClass().getSimpleName(), v1.prefix,
+							v2.prefix, v1);
 				}
 			}
 		});
@@ -92,7 +95,7 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 	@Override
 	public PrefixAnalysisDomain clone() {
 		PrefixAnalysisDomain domain = new PrefixAnalysisDomain();
-		table.putAll(domain.table);
+		domain.table.putAll(table);
 		return domain;
 	}
 

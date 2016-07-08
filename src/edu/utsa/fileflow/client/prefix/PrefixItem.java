@@ -71,6 +71,14 @@ public class PrefixItem {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		if (!(other instanceof PrefixItem))
+			return false;
+		PrefixItem o = (PrefixItem) other;
+		return prefix.equals(o.prefix) && unknown == o.unknown;
+	}
+
+	@Override
 	public String toString() {
 		if (unknown)
 			return prefix + "*";
