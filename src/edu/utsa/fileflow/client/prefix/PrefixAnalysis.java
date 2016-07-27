@@ -12,7 +12,9 @@ public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
 
 	@Override
 	public PrefixAnalysisDomain onFinish(PrefixAnalysisDomain domain) {
-		// domain.table.forEach((k, v) -> System.out.println(k + " : " + v));
+		System.out.println();
+		System.out.println("***** ON FINISH *****");
+		domain.table.forEach((k, v) -> System.out.println(k + " : " + v));
 		return domain;
 	}
 

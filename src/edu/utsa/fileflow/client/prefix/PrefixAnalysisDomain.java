@@ -26,7 +26,7 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 
 		// if is bottom just return
 		if (this.table.isEmpty()) {
-			// this.table.putAll(other.table);
+			// return this.table.putAll(other.table);
 			// return this.clone();
 			return this;
 		}
