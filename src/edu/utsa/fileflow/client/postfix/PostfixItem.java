@@ -60,7 +60,11 @@ public class PostfixItem {
 	 * @return a String representing the longest common postfix (LCP).
 	 */
 	public static String longestCommonPostfix(String s1, String s2) {
-		// FIXME: CONVERT TO POSTFIX
+		// reverse the strings and find longest common prefix
+		// this still yields longest common postfix
+		s1 = new StringBuilder(s1).reverse().toString();
+		s2 = new StringBuilder(s2).reverse().toString();
+
 		String min = s1;
 		String max = s2;
 		if (s2.length() < s1.length()) {
