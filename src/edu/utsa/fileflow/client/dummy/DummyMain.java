@@ -6,8 +6,6 @@ import java.io.IOException;
 
 import edu.utsa.fileflow.analysis.Analyzer;
 import edu.utsa.fileflow.cfg.FlowPoint;
-import edu.utsa.fileflow.client.prefix.PrefixAnalysis;
-import edu.utsa.fileflow.client.prefix.PrefixAnalysisDomain;
 import edu.utsa.fileflow.utilities.FileFlowHelper;
 
 public class DummyMain {
@@ -16,8 +14,8 @@ public class DummyMain {
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromScript(new File(TEST_SCRIPT));
-		Analyzer<PrefixAnalysisDomain, PrefixAnalysis> analyzer = new Analyzer<>(PrefixAnalysisDomain.class,
-				PrefixAnalysis.class);
+		Analyzer<DummyAnalysisDomain, DummyAnalysis> analyzer = new Analyzer<>(DummyAnalysisDomain.class,
+				DummyAnalysis.class);
 		analyzer.analyze(cfg);
 	}
 

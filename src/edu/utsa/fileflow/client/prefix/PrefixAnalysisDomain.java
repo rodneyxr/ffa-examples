@@ -25,29 +25,26 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 		// ab > abab*
 
 		// if is bottom just return
-		if (this.table.isEmpty()) {
-			// return this.table.putAll(other.table);
-			// return this.clone();
+		if (this.table.isEmpty())
 			return this;
-		}
 
 		// add (merge) everything in other table to this table
 		other.table.forEach((k, v2) -> {
 			PrefixItem v1 = this.table.get(k);
-			System.out.printf("v1: %s, v2: %s\n", v1, v2);
+			// System.out.printf("v1: %s, v2: %s\n", v1, v2); // DEBUG
 
 			// if item is only in other table
 			if (v1 == null) {
 				// just add it to this table
-				System.out.printf("Adding '%s' to this table\n", v2);
 				this.table.put(k, v2);
 			} else {
 				// item exists in both, so set this prefix to the LCP
 				String lcp = PrefixItem.longestCommonPrefix(v1.prefix, v2.prefix);
 				if (!lcp.equals(v1.prefix)) {
 					v1.setPrefix(lcp);
-					System.out.printf("(%s.java): ['%s' , '%s'] => '%s'\n", this.getClass().getSimpleName(), v1.prefix,
-							v2.prefix, v1);
+					// System.out.printf("(%s.java): ['%s' , '%s'] => '%s'\n",
+					// this.getClass().getSimpleName(), v1.prefix,
+					// v2.prefix, v1); // DEBUG
 				}
 			}
 		});
