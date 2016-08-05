@@ -1,0 +1,4 @@
+$x0 = 'a';
+
+// FIXME: $x0 not defined, but is defined the line before
+$x1 = $x0;

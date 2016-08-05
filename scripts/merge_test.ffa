@@ -1,0 +1,11 @@
+// merge_test.ffa
+$x0 = 'a';
+$x1 = 'ac';
+
+if (other) {
+	$x1 = $x0.$x1;
+}
+
+// Expected
+// $x0: 'a'
+// $x1: 'a'

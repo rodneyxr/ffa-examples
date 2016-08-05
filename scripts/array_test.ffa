@@ -1,0 +1,13 @@
+// array_test.ffa
+
+$i = 0
+for(){
+	$x[$i] = 'header-'.$i.'.txt'
+}
+$y = '/home/'.$x[$i]
+
+// Expected:
+// $x : 'header-'
+// $y: '/home/header-'
+// Note that we do not compute domain value for an array element.
+// Operations on any array element are considered as operations on the array variable.

@@ -18,12 +18,6 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 
 	@Override
 	public PrefixAnalysisDomain merge(PrefixAnalysisDomain other) {
-		// x = 'abc'
-		// y = 'ac'
-		// prefix = 'a'
-		// cut to common prefix
-		// ab > abab*
-
 		// if is bottom just return
 		if (this.table.isEmpty())
 			return this;
@@ -31,7 +25,6 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 		// add (merge) everything in other table to this table
 		other.table.forEach((k, v2) -> {
 			PrefixItem v1 = this.table.get(k);
-			// System.out.printf("v1: %s, v2: %s\n", v1, v2); // DEBUG
 
 			// if item is only in other table
 			if (v1 == null) {
@@ -42,9 +35,6 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 				String lcp = PrefixItem.longestCommonPrefix(v1.prefix, v2.prefix);
 				if (!lcp.equals(v1.prefix)) {
 					v1.setPrefix(lcp);
-					// System.out.printf("(%s.java): ['%s' , '%s'] => '%s'\n",
-					// this.getClass().getSimpleName(), v1.prefix,
-					// v2.prefix, v1); // DEBUG
 				}
 			}
 		});
