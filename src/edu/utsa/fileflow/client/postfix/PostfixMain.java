@@ -13,7 +13,7 @@ public class PostfixMain {
 	private static final String TEST_SCRIPT = "scripts/test.ffa";
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
-		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromScript(new File(TEST_SCRIPT));
+		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(new File(TEST_SCRIPT));
 		Analyzer<PostfixAnalysisDomain, PostfixAnalysis> analyzer = new Analyzer<>(PostfixAnalysisDomain.class,
 				PostfixAnalysis.class);
 		analyzer.analyze(cfg);

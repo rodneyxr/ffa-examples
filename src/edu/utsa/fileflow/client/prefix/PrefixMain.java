@@ -11,10 +11,10 @@ import edu.utsa.fileflow.utilities.FileFlowHelper;
 
 public class PrefixMain {
 
-	private static final String TEST_SCRIPT = "scripts/test.ffa";
+	private static final String TEST_SCRIPT = "scripts/merge_test.ffa";
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
-		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromScript(new File(TEST_SCRIPT));
+		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(new File(TEST_SCRIPT));
 		writeDOT(cfg);
 		// perform prefix analysis
 		Analyzer<PrefixAnalysisDomain, PrefixAnalysis> analyzer = new Analyzer<>(PrefixAnalysisDomain.class,

@@ -40,7 +40,7 @@ public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
 		TerminalNode term1 = val.Variable();
 		if (term1 != null) {
 			// term1 is a variable
-			t1 = domain.table.get(term1);
+			t1 = domain.table.get(term1.getText());
 			if (t1 == null) {
 				// FIXME: variable term1 not defined
 				System.err.println("Analysis Error: variable '" + term1.getText() + "' not defined");
@@ -58,7 +58,7 @@ public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
 			TerminalNode term2 = val.Variable();
 			if (term2 != null) {
 				// term2 is a variable
-				t2 = domain.table.get(term2);
+				t2 = domain.table.get(term2.getText());
 				if (t2 == null) {
 					// FIXME: variable term2 not defined
 					System.err.println("Analysis Error: variable '" + term2.getText() + "' not defined");

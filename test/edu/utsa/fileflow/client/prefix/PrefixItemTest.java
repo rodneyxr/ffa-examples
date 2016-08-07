@@ -9,32 +9,23 @@ public class PrefixItemTest {
 	@Test
 	public void testLongestCommonPrefix() throws Exception {
 		// x = 'abc'
-		final String x = "abc";
-
 		// y = 'ac'
-		final String y = "ac";
-
 		// prefix = 'a'
-		final String prefix = "a";
-
-		// check answer
-		assertEquals(PrefixItem.longestCommonPrefix(x, y), prefix);
+		final String x = "abc";
+		final String y = "ac";
+		final String expectedPrefix = "a";
+		assertEquals(expectedPrefix, PrefixItem.longestCommonPrefix(x, y));
 	}
 
 	@Test
 	public void testLongestCommonPrefixWithNoCommonPrefix() throws Exception {
 		// x = 'cat'
-		final String x = "cat";
-
 		// y = 'dog'
-		final String y = "dog";
-
 		// prefix = ''
-		final String prefix = "";
-		System.out.println(PrefixItem.longestCommonPrefix(x, y));
-
-		// check answer
-		assertEquals(PrefixItem.longestCommonPrefix(x, y), prefix);
+		final String x = "cat";
+		final String y = "dog";
+		final String expectedPrefix = "";
+		assertEquals(expectedPrefix, PrefixItem.longestCommonPrefix(x, y));
 	}
 
 }
