@@ -3,11 +3,29 @@ package edu.utsa.fileflow.client.prefix;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import org.junit.Before;
 import org.junit.Test;
+
+import edu.utsa.fileflow.analysis.Analyzer;
+import edu.utsa.fileflow.cfg.FlowPoint;
+import edu.utsa.fileflow.utilities.FileFlowHelper;
 
 public class PrefixDomainTest {
 
 	final PrefixAnalysisDomain FACTORY = new PrefixAnalysisDomain();
+
+	StringBuilder script;
+
+	/**
+	 * @throws java.lang.Exception
+	 */
+	@Before
+	public void setUp() throws Exception {
+		script = new StringBuilder();
+	}
 
 	@Test
 	public void testPrefixDomainClone() throws Exception {
@@ -36,12 +54,28 @@ public class PrefixDomainTest {
 		// prefix = 'a'
 		// anything after prefix is unknown
 
-		// System.out.println(result.table.get("$x0"));
-
 		// check answer
-		PrefixItem expected = new PrefixItem("a");
-		expected.setPrefix("a"); // this sets unknown to true; (a*)
+		PrefixItem expected = new PrefixItem("a", true);
 
 		assertTrue(result.table.containsValue(expected));
+	}
+
+	@Test
+	public void testAssignment() throws Exception {
+		s("$x0 = 'a';");
+		PrefixAnalysisDomain result = getResult(script.toString());
+		assertEquals(result.table.get("$x0"), new PrefixItem("a"));
+	}
+
+	private PrefixAnalysisDomain getResult(String script) throws FileNotFoundException, IOException {
+		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromScript(script);
+		Analyzer<PrefixAnalysisDomain, PrefixAnalysis> analyzer = new Analyzer<>(PrefixAnalysisDomain.class,
+				PrefixAnalysis.class);
+		return analyzer.analyze(cfg);
+	}
+
+	private void s(String line) {
+		script.append(line);
+		script.append("\n");
 	}
 }

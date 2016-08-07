@@ -9,8 +9,12 @@ public class PrefixItem {
 	private boolean unknown;
 
 	public PrefixItem(String prefix) {
+		this(prefix, false);
+	}
+	
+	public PrefixItem(String prefix, boolean unknown) {
 		this.prefix = prefix;
-		this.unknown = false;
+		this.unknown = unknown;
 	}
 
 	/**
