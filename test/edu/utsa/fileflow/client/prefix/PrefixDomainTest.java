@@ -61,12 +61,46 @@ public class PrefixDomainTest {
 	}
 
 	@Test
-	public void testAssignment() throws Exception {
+	public void testScriptAssignment() throws Exception {
 		s("$x0 = 'a';");
 		PrefixAnalysisDomain result = getResult(script.toString());
 		assertEquals(result.table.get("$x0"), new PrefixItem("a"));
 	}
-
+	
+	@Test
+	public void testScriptBasicIfStat() throws Exception {
+		s("$x0 = 'abc';");
+		s("if (other) {");
+		s("    $x0 = 'ac';");
+		s("}");
+		PrefixAnalysisDomain result = getResult(script.toString());
+		assertEquals(result.table.get("$x0"), new PrefixItem("a", true));
+	}
+	
+	@Test
+	public void testScriptMerge() throws Exception {
+		s("$x0 = 'a';");
+		s("$x1 = 'ac';");
+		s("if (other) {");
+		s("    $x1 = $x0.$x1;");
+		s("}");
+		PrefixAnalysisDomain result = getResult(script.toString());
+		assertEquals(result.table.get("$x0"), new PrefixItem("a", false));
+		assertEquals(result.table.get("$x1"), new PrefixItem("a", true));
+	}
+	
+	@Test
+	public void testScriptLoop() throws Exception {
+		s("$x0 = 'ab';");
+		s("$x1 = 't';");
+		s("while (other) {");
+		s("    $x0 = $x0.$x1;");
+		s("}");
+		PrefixAnalysisDomain result = getResult(script.toString());
+		assertEquals(result.table.get("$x0"), new PrefixItem("ab", false));
+		assertEquals(result.table.get("$x1"), new PrefixItem("t", true));
+	}
+	
 	private PrefixAnalysisDomain getResult(String script) throws FileNotFoundException, IOException {
 		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromScript(script);
 		Analyzer<PrefixAnalysisDomain, PrefixAnalysis> analyzer = new Analyzer<>(PrefixAnalysisDomain.class,

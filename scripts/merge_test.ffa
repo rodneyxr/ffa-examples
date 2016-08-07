@@ -8,4 +8,4 @@ if (other) {
 
 // Expected
 // $x0: 'a'
-// $x1: 'a'
+// $x1: 'a*'
