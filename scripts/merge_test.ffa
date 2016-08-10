@@ -3,7 +3,8 @@ $x0 = 'a';
 $x1 = 'ac';
 
 if (other) {
-	$x1 = $x0.$x1;
+	//$x1 = $x0.$x1;
+	$x1 = 'a'.'ac';
 }
 
 // Expected

@@ -82,7 +82,10 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 	@Override
 	public PrefixAnalysisDomain clone() {
 		PrefixAnalysisDomain domain = new PrefixAnalysisDomain();
-		domain.table.putAll(table);
+		// clone each value in this table over to the new table
+		table.forEach((k, v) -> {
+			domain.table.put(k, v.clone());
+		});
 		return domain;
 	}
 

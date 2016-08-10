@@ -1,6 +1,8 @@
 package edu.utsa.fileflow.client.prefix;
 
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
@@ -32,12 +34,23 @@ public class PrefixDomainTest {
 	@Test
 	public void testPrefixDomainClone() throws Exception {
 		PrefixAnalysisDomain d1 = FACTORY.bottom();
+
+		// create a reference of $x0 and store it in domain d1
 		d1.table.put("$x0", new PrefixItem("a"));
 
+		// create a clone of d1, called d2, that should contain different
+		// references of each prefix item
 		PrefixAnalysisDomain d2 = d1.clone();
 
-		// check answer
+		// assert table contents are the same
 		assertEquals(d1.table, d2.table);
+
+		// assert prefix items are different objects in memory
+		assertTrue(d1.table.get("$x0") != d2.table.get("$x0"));
+
+		// change d1 and make sure that it does not affect d2's values
+		d1.table.get("$x0").prefix = "modified";
+		assertThat(d1.table.get("$x0"), not(d2.table.get("$x0")));
 	}
 
 	@Test

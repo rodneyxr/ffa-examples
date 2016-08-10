@@ -1,6 +1,6 @@
 package edu.utsa.fileflow.client.prefix;
 
-public class PrefixItem {
+public class PrefixItem implements Cloneable {
 
 	// the beginning of the string
 	String prefix;
@@ -11,7 +11,7 @@ public class PrefixItem {
 	public PrefixItem(String prefix) {
 		this(prefix, false);
 	}
-	
+
 	public PrefixItem(String prefix, boolean unknown) {
 		this.prefix = prefix;
 		this.unknown = unknown;
@@ -87,6 +87,11 @@ public class PrefixItem {
 		if (unknown)
 			return prefix + "*";
 		return prefix;
+	}
+
+	@Override
+	public PrefixItem clone() {
+		return new PrefixItem(prefix, unknown);
 	}
 
 }
