@@ -21,7 +21,6 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 		// if is bottom just return
 		if (this.table.isEmpty())
 			return this;
-
 		// add (merge) everything in other table to this table
 		other.table.forEach((k, v2) -> {
 			PrefixItem v1 = this.table.get(k);

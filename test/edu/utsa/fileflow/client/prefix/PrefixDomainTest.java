@@ -112,6 +112,21 @@ public class PrefixDomainTest {
 		s("    $x0 = $x0.$x1;");
 		s("}");
 		PrefixAnalysisDomain result = getResult();
+		// FIXME: ON_EXIT hook might be broken
+		assertEquals(new PrefixItem("ab", true), result.table.get("$x0"));
+		assertEquals(new PrefixItem("t", false), result.table.get("$x1"));
+	}
+	
+	@Test
+	public void testScriptArray() throws Exception {
+		// TODO: Add support for this in grammar
+		s("$x0 = INPUT;");
+		s("while (other) {");
+		s("    $x1[?] = 'header-'.$x0");
+		s("    $x1[?] = $x1[?].'.txt;'");
+		s("}");
+		s("$y = '/home/'.$x1[?];");
+		PrefixAnalysisDomain result = getResult();
 		assertEquals(new PrefixItem("ab", true), result.table.get("$x0"));
 		assertEquals(new PrefixItem("t", false), result.table.get("$x1"));
 	}

@@ -40,11 +40,10 @@ public class PrefixItem implements Cloneable {
 	 */
 	public PrefixItem concat(PrefixItem other) {
 		if (!unknown) {
-			this.prefix = prefix + other.prefix;
-			if (other.unknown)
-				this.unknown = true;
+			return new PrefixItem(prefix + other.prefix, other.unknown);
+		}else{
+			return clone();
 		}
-		return this;
 	}
 
 	/**
