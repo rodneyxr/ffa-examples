@@ -7,5 +7,5 @@ while (other) {
 }
 
 // Expected
-// $x0: 'ab'
-// $x0: 't'
+// $x0: 'ab*'
+// $x1: 't'

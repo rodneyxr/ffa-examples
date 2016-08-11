@@ -1,13 +1,21 @@
 // array_test.ffa
-
-$i = 0
-for(){
-	$x[$i] = 'header-'.$i.'.txt'
+$x0 = INPUT;
+while (other) {
+    $x1[?] = 'header-'.$x0;
+    $x1[?] = $x1[?].'.txt';
 }
-$y = '/home/'.$x[$i]
+$x2 = '/home/'.$x1[?];
 
 // Expected:
-// $x : 'header-'
-// $y: '/home/header-'
+// $x0: '*'
+// $x1: 'header-*'
+// $x2: '/home/header-*'
 // Note that we do not compute domain value for an array element.
 // Operations on any array element are considered as operations on the array variable.
+
+// original
+//$i = 0
+//for(){
+//	$x[$i] = 'header-'.$i.'.txt'
+//}
+//$y = '/home/'.$x[$i]
