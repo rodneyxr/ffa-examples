@@ -1,7 +1,7 @@
-$x0='abc';
-if (other) {
-	$x0 = 'ac';
+$x0 = INPUT;
+$x1[?] = [];
+while (other) {
+    $x1[?] = 'header-'.$x0;
+    $x1[?] = $x1[?].'.txt';
 }
-
-// Expected
-// $x0 = 'a*'
+$x2 = '/home/'.$x1[?];

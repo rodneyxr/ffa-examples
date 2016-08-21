@@ -1,0 +1,7 @@
+$x0='abc';
+if (other) {
+	$x0 = 'ac';
+}
+
+// Expected
+// $x0 = 'a*'

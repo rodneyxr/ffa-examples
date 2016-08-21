@@ -56,6 +56,7 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 		// TODO: SMALLER | EQUAL | LARGER | UNDEFINED
 		// FIXME: Not 100% correct but this method really just needs to check if
 		// it is equal, which does work.
+
 		if (table.size() < other.table.size())
 			return -1;
 		if (table.size() > other.table.size())
@@ -72,7 +73,7 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 				return 1;
 			if (v1.prefix.length() > v2.prefix.length())
 				return -1;
-			if (!v1.prefix.equals(v2.prefix))
+			if (!v1.equals(v2))
 				return -1;
 		}
 		return 0;

@@ -29,11 +29,20 @@ public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
 	public PrefixAnalysisDomain enterAssignment(PrefixAnalysisDomain domain, FlowPointContext context) {
 		AssignmentContext ctx = (AssignmentContext) context.getContext();
 		ExpressionContext expr = ctx.expression();
+		TerminalNode input = ctx.Input();
 
 		// variable name (key to update)
 		String key = ctx.Variable().getText();
 		PrefixItem t1 = null;
 		PrefixItem t2 = null;
+
+		// if user input is required
+		if (input != null) {
+			// INPUT is equivalent to '*'
+			PrefixItem val = new PrefixItem("", true);
+			domain.table.put(key, val);
+			return domain;
+		}
 
 		// get the first term
 		ValueContext val = expr.value(0);
@@ -42,7 +51,7 @@ public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
 			// term1 is a variable
 			t1 = domain.table.get(term1.getText());
 			if (t1 == null) {
-				// FIXME: variable term1 not defined
+				// TODO: throw exception
 				System.err.println("Analysis Error: variable '" + term1.getText() + "' not defined");
 				System.exit(1);
 			}
@@ -60,7 +69,7 @@ public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
 				// term2 is a variable
 				t2 = domain.table.get(term2.getText());
 				if (t2 == null) {
-					// FIXME: variable term2 not defined
+					// TODO: throw exception
 					System.err.println("Analysis Error: variable '" + term2.getText() + "' not defined");
 					System.exit(1);
 				}
