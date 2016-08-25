@@ -26,7 +26,10 @@ public class PostfixAnalysis extends BaseAnalysis<PostfixAnalysisDomain> {
 	@Override
 	public PostfixAnalysisDomain enterAssignment(PostfixAnalysisDomain domain, FlowPointContext context) {
 		AssignmentContext ctx = (AssignmentContext) context.getContext();
-		ExpressionContext expr = ctx.expression();
+		ExpressionContext expr = ctx.varValue().expression();
+		if (expr == null) {
+			expr = ctx.arrayValue().varValue().expression();
+		}
 
 		// variable name (key to update)
 		String key = ctx.Variable().getText();

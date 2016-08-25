@@ -1,6 +1,7 @@
 $x0 = INPUT;
 $x1[?] = [];
-while (other) {
+
+if (other) {
     $x1[?] = 'header-'.$x0;
     $x1[?] = $x1[?].'.txt';
 }

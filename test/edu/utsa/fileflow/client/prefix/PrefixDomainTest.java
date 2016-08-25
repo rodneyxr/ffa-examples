@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -134,11 +133,10 @@ public class PrefixDomainTest {
 		s("}");
 		s("$x2 = '/home/'.$x1[?];");
 
-		fail("Not yet implemented");
 		PrefixAnalysisDomain result = getResult();
 		assertEquals(new PrefixItem("", true), result.table.get("$x0"));
-		assertEquals(new PrefixItem("header-", true), result.table.get("$x1"));
-		assertEquals(new PrefixItem("/home/header-", true), result.table.get("$x1"));
+		assertEquals(new PrefixItem("header-", true), result.table.get("$x1[?]"));
+		assertEquals(new PrefixItem("/home/header-", true), result.table.get("$x2"));
 	}
 
 	/**

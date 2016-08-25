@@ -1,5 +1,13 @@
 package edu.utsa.fileflow.client.prefix;
 
+/**
+ * This class represents a prefix string. It also includes some other fields so
+ * that we can tell if everything after the prefix is known or not. We can also
+ * represent a bottom for prefix which is basically nothing (null).
+ * 
+ * @author Rodney Rodriguez
+ *
+ */
 public class PrefixItem implements Cloneable {
 
 	// the beginning of the string
@@ -8,6 +16,9 @@ public class PrefixItem implements Cloneable {
 	// true if anything after the prefix is unknown. ex: 'abc*'
 	private boolean unknown;
 
+	// true if prefix item is bottom (null)
+	private boolean isBottom;
+
 	public PrefixItem(String prefix) {
 		this(prefix, false);
 	}
@@ -15,6 +26,17 @@ public class PrefixItem implements Cloneable {
 	public PrefixItem(String prefix, boolean unknown) {
 		this.prefix = prefix;
 		this.unknown = unknown;
+		this.isBottom = false;
+	}
+
+	/**
+	 * 
+	 * @return the bottom representation of {@link PrefixItem}
+	 */
+	public static PrefixItem bottom() {
+		PrefixItem bottom = new PrefixItem("");
+		bottom.isBottom = true;
+		return bottom;
 	}
 
 	/**
@@ -39,11 +61,33 @@ public class PrefixItem implements Cloneable {
 	 * @return this object for chaining methods.
 	 */
 	public PrefixItem concat(PrefixItem other) {
+		if (isBottom)
+			return other.clone();
 		if (!unknown) {
 			return new PrefixItem(prefix + other.prefix, other.unknown);
-		}else{
+		} else {
 			return clone();
 		}
+	}
+
+	/**
+	 * Merges two PrefixItems. If one of the PrefixItems are bottom then the
+	 * other one is returned.
+	 * 
+	 * @param other
+	 *            The PrefixItem to be merged with the invoking PrefixItem.
+	 * @return the merged PrefixItem.
+	 */
+	public PrefixItem merge(PrefixItem other) {
+		if (isBottom)
+			return other.clone();
+		if (other.isBottom)
+			return this;
+		String lcp = PrefixItem.longestCommonPrefix(prefix, other.prefix);
+		if (!lcp.equals(prefix)) {
+			setPrefix(lcp);
+		}
+		return this;
 	}
 
 	/**
@@ -78,11 +122,13 @@ public class PrefixItem implements Cloneable {
 		if (!(other instanceof PrefixItem))
 			return false;
 		PrefixItem o = (PrefixItem) other;
-		return prefix.equals(o.prefix) && unknown == o.unknown;
+		return prefix.equals(o.prefix) && unknown == o.unknown && isBottom == o.isBottom;
 	}
 
 	@Override
 	public String toString() {
+		if (isBottom)
+			return "BOTTOM";
 		if (unknown)
 			return prefix + "*";
 		return prefix;
@@ -90,6 +136,8 @@ public class PrefixItem implements Cloneable {
 
 	@Override
 	public PrefixItem clone() {
+		if (isBottom)
+			return PrefixItem.bottom();
 		return new PrefixItem(prefix, unknown);
 	}
 

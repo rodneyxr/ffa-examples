@@ -3,9 +3,11 @@ package edu.utsa.fileflow.client.prefix;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import edu.utsa.fileflow.analysis.BaseAnalysis;
+import edu.utsa.fileflow.antlr.FileFlowParser.ArrayValueContext;
 import edu.utsa.fileflow.antlr.FileFlowParser.AssignmentContext;
 import edu.utsa.fileflow.antlr.FileFlowParser.ExpressionContext;
 import edu.utsa.fileflow.antlr.FileFlowParser.ValueContext;
+import edu.utsa.fileflow.antlr.FileFlowParser.VarValueContext;
 import edu.utsa.fileflow.cfg.FlowPointContext;
 
 public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
@@ -28,13 +30,49 @@ public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
 	@Override
 	public PrefixAnalysisDomain enterAssignment(PrefixAnalysisDomain domain, FlowPointContext context) {
 		AssignmentContext ctx = (AssignmentContext) context.getContext();
-		ExpressionContext expr = ctx.expression();
-		TerminalNode input = ctx.Input();
+		VarValueContext var = ctx.varValue();
+		ArrayValueContext arr = ctx.arrayValue();
+
+		// true if variable on left side is an array
+		boolean hasIndex = (ctx.Index() != null);
+
+		ExpressionContext expr = null;
+		TerminalNode input = null;
+		TerminalNode empty = null;
+
+		// if assignment variable is array and has index
+		if (hasIndex) {
+			if (arr.varValue() == null) {
+				empty = arr.EmptyValue();
+			} else {
+				expr = arr.varValue().expression();
+				input = arr.varValue().Input();
+			}
+		} else {
+			// if assignment is a regular variable with no index
+			expr = var.expression();
+			input = var.Input();
+		}
 
 		// variable name (key to update)
 		String key = ctx.Variable().getText();
+		if (hasIndex)
+			key = key + ctx.Index().getText();
+
 		PrefixItem t1 = null;
 		PrefixItem t2 = null;
+
+		// if array variable is assigned to empty array
+		if (empty != null) {
+			t1 = PrefixItem.bottom();
+			PrefixItem old = domain.table.get(key);
+			if (old != null) {
+				domain.table.put(key, t1.concat(old));
+			} else {
+				domain.table.put(key, t1);
+			}
+			return domain;
+		}
 
 		// if user input is required
 		if (input != null) {
@@ -49,10 +87,13 @@ public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
 		TerminalNode term1 = val.Variable();
 		if (term1 != null) {
 			// term1 is a variable
-			t1 = domain.table.get(term1.getText());
+			String term1Text = term1.getText();
+			if (val.Index() != null)
+				term1Text += val.Index().getText();
+			t1 = domain.table.get(term1Text);
 			if (t1 == null) {
 				// TODO: throw exception
-				System.err.println("Analysis Error: variable '" + term1.getText() + "' not defined");
+				System.err.println("Analysis Error: variable '" + term1Text + "' not defined");
 				System.exit(1);
 			}
 		} else {
@@ -67,10 +108,13 @@ public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
 			TerminalNode term2 = val.Variable();
 			if (term2 != null) {
 				// term2 is a variable
-				t2 = domain.table.get(term2.getText());
+				String term2Text = term2.getText();
+				if (val.Index() != null)
+					term2Text += val.Index().getText();
+				t2 = domain.table.get(term2Text);
 				if (t2 == null) {
 					// TODO: throw exception
-					System.err.println("Analysis Error: variable '" + term2.getText() + "' not defined");
+					System.err.println("Analysis Error: variable '" + term2Text + "' not defined");
 					System.exit(1);
 				}
 			} else {
@@ -79,8 +123,15 @@ public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
 				t2 = new PrefixItem(term2.getText().substring(1, term2.getText().length() - 1));
 			}
 
-			domain.table.put(key, t1.concat(t2));
+			PrefixItem old = domain.table.get(key);
+			if (old != null && hasIndex) {
+				domain.table.put(key, t1.concat(t2).merge(old));
+			} else
+				domain.table.put(key, t1.concat(t2));
 		} else {
+			PrefixItem old = domain.table.get(key);
+			if (old != null && hasIndex)
+				t1.merge(old);
 			domain.table.put(key, t1);
 		}
 
