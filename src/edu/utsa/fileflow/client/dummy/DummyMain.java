@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import edu.utsa.fileflow.analysis.AnalysisException;
 import edu.utsa.fileflow.analysis.Analyzer;
 import edu.utsa.fileflow.cfg.FlowPoint;
 import edu.utsa.fileflow.utilities.FileFlowHelper;
@@ -16,7 +17,12 @@ public class DummyMain {
 		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(new File(TEST_SCRIPT));
 		Analyzer<DummyAnalysisDomain, DummyAnalysis> analyzer = new Analyzer<>(DummyAnalysisDomain.class,
 				DummyAnalysis.class);
-		analyzer.analyze(cfg);
+		try {
+			analyzer.analyze(cfg);
+		} catch (AnalysisException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 }

@@ -2,6 +2,7 @@ package edu.utsa.fileflow.client.prefix;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import edu.utsa.fileflow.analysis.AnalysisException;
 import edu.utsa.fileflow.analysis.BaseAnalysis;
 import edu.utsa.fileflow.antlr.FileFlowParser.ArrayValueContext;
 import edu.utsa.fileflow.antlr.FileFlowParser.AssignmentContext;
@@ -24,11 +25,12 @@ public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
 	public PrefixAnalysisDomain onBefore(PrefixAnalysisDomain domain, FlowPointContext context) {
 		domain.table.forEach((k, v) -> System.out.printf("(%s.java): [%s : %s]\n", getClass().getSimpleName(), k, v));
 		System.out.println("==========================================================");
-		return super.onAfter(domain, context);
+		return domain;
 	}
 
 	@Override
-	public PrefixAnalysisDomain enterAssignment(PrefixAnalysisDomain domain, FlowPointContext context) {
+	public PrefixAnalysisDomain enterAssignment(PrefixAnalysisDomain domain, FlowPointContext context)
+			throws AnalysisException {
 		AssignmentContext ctx = (AssignmentContext) context.getContext();
 		VarValueContext var = ctx.varValue();
 		ArrayValueContext arr = ctx.arrayValue();

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import edu.utsa.fileflow.analysis.AnalysisException;
 import edu.utsa.fileflow.analysis.Analyzer;
 import edu.utsa.fileflow.cfg.FlowPoint;
 import edu.utsa.fileflow.testutils.GraphvizGenerator;
@@ -19,7 +20,12 @@ public class PrefixMain {
 		// perform prefix analysis
 		Analyzer<PrefixAnalysisDomain, PrefixAnalysis> analyzer = new Analyzer<>(PrefixAnalysisDomain.class,
 				PrefixAnalysis.class);
-		analyzer.analyze(cfg);
+		try {
+			analyzer.analyze(cfg);
+		} catch (AnalysisException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 	/**

@@ -8,15 +8,14 @@ public class PostfixItemTest {
 
 	@Test
 	public void testLongestCommonPostfix() throws Exception {
-		// x = 'abc'
-		final String x = "abc";
+		// x = 'abcd'
+		final String x = "abcd";
 
-		// y = 'ac'
-		final String y = "ac";
+		// y = 'acd'
+		final String y = "acd";
 
-		// postfix = 'c'
-		final String expectedPostfix = "c";
-		System.out.println(PostfixItem.longestCommonPostfix(x, y));
+		// postfix = 'cd'
+		final String expectedPostfix = "cd";
 
 		// check answer
 		assertEquals(expectedPostfix, PostfixItem.longestCommonPostfix(x, y));
@@ -32,7 +31,6 @@ public class PostfixItemTest {
 
 		// postfix = ''
 		final String expectedPostfix = "";
-//		System.out.println(PostfixItem.longestCommonPostfix(x, y));
 
 		// check answer
 		assertEquals(expectedPostfix, PostfixItem.longestCommonPostfix(x, y));

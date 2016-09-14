@@ -1,5 +1,7 @@
 package edu.utsa.fileflow.client.prefix;
 
+import edu.utsa.fileflow.analysis.AnalysisException;
+
 /**
  * This class represents a prefix string. It also includes some other fields so
  * that we can tell if everything after the prefix is known or not. We can also
@@ -11,7 +13,7 @@ package edu.utsa.fileflow.client.prefix;
 public class PrefixItem implements Cloneable {
 
 	// the beginning of the string
-	String prefix;
+	private String prefix;
 
 	// true if anything after the prefix is unknown. ex: 'abc*'
 	private boolean unknown;
@@ -40,7 +42,16 @@ public class PrefixItem implements Cloneable {
 	}
 
 	/**
-	 * Sets this objects prefix and toggles unknown to true since changing the
+	 * Gets the prefix of this object.
+	 * 
+	 * @return the prefix represented by a {@link String}.
+	 */
+	public String getPrefix() {
+		return prefix;
+	}
+
+	/**
+	 * Sets this object's prefix and toggles unknown to true since changing the
 	 * prefix implies that anything after prefix is unknown.
 	 * 
 	 * @param prefix
@@ -60,9 +71,9 @@ public class PrefixItem implements Cloneable {
 	 *            The other PrefixItem to concat to this object.
 	 * @return this object for chaining methods.
 	 */
-	public PrefixItem concat(PrefixItem other) {
-		if (isBottom)
-			return other.clone();
+	public PrefixItem concat(PrefixItem other) throws AnalysisException {
+		if (isBottom || other.isBottom)
+			throw new AnalysisException("Undefined PrefixItem; Cannot concat with BOTTOM.");
 		if (!unknown) {
 			return new PrefixItem(prefix + other.prefix, other.unknown);
 		} else {

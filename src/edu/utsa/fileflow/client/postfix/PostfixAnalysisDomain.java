@@ -18,37 +18,21 @@ public class PostfixAnalysisDomain extends AnalysisDomain<PostfixAnalysisDomain>
 
 	@Override
 	public PostfixAnalysisDomain merge(PostfixAnalysisDomain other) {
-		// x = 'abc'
-		// y = 'ac'
-		// prefix = 'a'
-		// cut to common prefix
-		// ab > abab*
-
 		// if is bottom just return
-		if (this.table.isEmpty()) {
-			// this.table.putAll(other.table);
-			// return this.clone();
+		if (this.table.isEmpty())
 			return this;
-		}
 
 		// add (merge) everything in other table to this table
 		other.table.forEach((k, v2) -> {
 			PostfixItem v1 = this.table.get(k);
-			System.out.printf("v1: %s, v2: %s\n", v1, v2);
 
 			// if item is only in other table
 			if (v1 == null) {
 				// just add it to this table
-				System.out.printf("Adding '%s' to this table\n", v2);
 				this.table.put(k, v2);
 			} else {
-				// item exists in both, so set this prefix to the LCP
-				String lcp = PostfixItem.longestCommonPostfix(v1.postfix, v2.postfix);
-				if (!lcp.equals(v1.postfix)) {
-					v1.setPostfix(lcp);
-					System.out.printf("(%s.java): ['%s' , '%s'] => '%s'\n", this.getClass().getSimpleName(), v1.postfix,
-							v2.postfix, v1);
-				}
+				// item exists in both, so merge the two PostfixItems
+				v1.merge(v2);
 			}
 		});
 
@@ -75,18 +59,16 @@ public class PostfixAnalysisDomain extends AnalysisDomain<PostfixAnalysisDomain>
 		if (table.size() > other.table.size())
 			return 1;
 
-		// ab* is a superset of abab*
-		// ab* > abab*
 		for (String k : table.keySet()) {
 			PostfixItem v1 = table.get(k);
 			PostfixItem v2 = other.table.get(k);
 			if (v2 == null)
 				return 1;
-			if (v1.postfix.length() < v2.postfix.length())
+			if (v1.getPostfix().length() < v2.getPostfix().length())
 				return 1;
-			if (v1.postfix.length() > v2.postfix.length())
+			if (v1.getPostfix().length() > v2.getPostfix().length())
 				return -1;
-			if (!v1.postfix.equals(v2.postfix))
+			if (!v1.equals(v2))
 				return -1;
 		}
 		return 0;
@@ -95,7 +77,10 @@ public class PostfixAnalysisDomain extends AnalysisDomain<PostfixAnalysisDomain>
 	@Override
 	public PostfixAnalysisDomain clone() {
 		PostfixAnalysisDomain domain = new PostfixAnalysisDomain();
-		domain.table.putAll(table);
+		// clone each value in this table over to the new table
+		table.forEach((k, v) -> {
+			domain.table.put(k, v.clone());
+		});
 		return domain;
 	}
 

@@ -9,8 +9,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
+import edu.utsa.fileflow.analysis.AnalysisException;
 import edu.utsa.fileflow.analysis.Analyzer;
 import edu.utsa.fileflow.cfg.FlowPoint;
 import edu.utsa.fileflow.utilities.FileFlowHelper;
@@ -18,6 +21,9 @@ import edu.utsa.fileflow.utilities.FileFlowHelper;
 public class PrefixDomainTest {
 
 	final PrefixAnalysisDomain FACTORY = new PrefixAnalysisDomain();
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	// holds the text of a script to be analyzed
 	StringBuilder script;
@@ -49,7 +55,7 @@ public class PrefixDomainTest {
 		assertTrue(d1.table.get("$x0") != d2.table.get("$x0"));
 
 		// change d1 and make sure that it does not affect d2's values
-		d1.table.get("$x0").prefix = "modified";
+		d1.table.get("$x0").setPrefix("modified");
 		assertThat(d1.table.get("$x0"), not(d2.table.get("$x0")));
 	}
 
@@ -131,8 +137,9 @@ public class PrefixDomainTest {
 		s("    $x1[?] = 'header-'.$x0;");
 		s("    $x1[?] = $x1[?].'.txt';");
 		s("}");
-		s("$x2 = '/home/'.$x1[?];");
+		s("$x2 = '/home/'.$x1[?];"); // $x1[?] may not be defined here
 
+		exception.expectMessage("Undefined PrefixItem");
 		PrefixAnalysisDomain result = getResult();
 		assertEquals(new PrefixItem("", true), result.table.get("$x0"));
 		assertEquals(new PrefixItem("header-", true), result.table.get("$x1[?]"));
@@ -145,8 +152,9 @@ public class PrefixDomainTest {
 	 * @return the result of the analysis on the script after exit.
 	 * @throws FileNotFoundException
 	 * @throws IOException
+	 * @throws AnalysisException
 	 */
-	private PrefixAnalysisDomain getResult() throws IOException {
+	private PrefixAnalysisDomain getResult() throws IOException, AnalysisException {
 		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromScript(script.toString());
 		Analyzer<PrefixAnalysisDomain, PrefixAnalysis> analyzer = new Analyzer<>(PrefixAnalysisDomain.class,
 				PrefixAnalysis.class);

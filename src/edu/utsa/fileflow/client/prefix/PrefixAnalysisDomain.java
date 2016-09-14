@@ -67,9 +67,9 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 			PrefixItem v2 = other.table.get(k);
 			if (v2 == null)
 				return 1;
-			if (v1.prefix.length() < v2.prefix.length())
+			if (v1.getPrefix().length() < v2.getPrefix().length())
 				return 1;
-			if (v1.prefix.length() > v2.prefix.length())
+			if (v1.getPrefix().length() > v2.getPrefix().length())
 				return -1;
 			if (!v1.equals(v2))
 				return -1;

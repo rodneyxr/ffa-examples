@@ -4,7 +4,7 @@ while (other) {
     $x1[?] = 'header-'.$x0;
     $x1[?] = $x1[?].'.txt';
 }
-$x2 = '/home/'.$x1[?];
+$x2 = '/home/'.$x1[?]; // AnalysisException: $x1[?] not defined.
 
 // Expected:
 // $x0: '*'
@@ -12,10 +12,3 @@ $x2 = '/home/'.$x1[?];
 // $x2: '/home/header-*'
 // Note that we do not compute domain value for an array element.
 // Operations on any array element are considered as operations on the array variable.
-
-// original
-//$i = 0
-//for(){
-//	$x[$i] = 'header-'.$i.'.txt'
-//}
-//$y = '/home/'.$x[$i]
