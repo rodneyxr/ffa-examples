@@ -101,7 +101,7 @@ public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
 		} else {
 			// term1 is a string
 			term1 = val.String();
-			t1 = new PrefixItem(term1.getText().substring(1, term1.getText().length() - 1));
+			t1 = new PrefixItem(term1.getText());
 		}
 
 		// check for concatenation
@@ -122,7 +122,7 @@ public class PrefixAnalysis extends BaseAnalysis<PrefixAnalysisDomain> {
 			} else {
 				// term2 is a string
 				term2 = val.String();
-				t2 = new PrefixItem(term2.getText().substring(1, term2.getText().length() - 1));
+				t2 = new PrefixItem(term2.getText());
 			}
 
 			PrefixItem old = domain.table.get(key);

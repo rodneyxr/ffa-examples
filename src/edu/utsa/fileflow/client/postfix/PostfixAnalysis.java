@@ -101,7 +101,7 @@ public class PostfixAnalysis extends BaseAnalysis<PostfixAnalysisDomain> {
 		} else {
 			// term1 is a string
 			term1 = val.String();
-			t1 = new PostfixItem(term1.getText().substring(1, term1.getText().length() - 1));
+			t1 = new PostfixItem(term1.getText());
 		}
 
 		// check for concatenation
@@ -122,7 +122,7 @@ public class PostfixAnalysis extends BaseAnalysis<PostfixAnalysisDomain> {
 			} else {
 				// term2 is a string
 				term2 = val.String();
-				t2 = new PostfixItem(term2.getText().substring(1, term2.getText().length() - 1));
+				t2 = new PostfixItem(term2.getText());
 			}
 
 			PostfixItem old = domain.table.get(key);

@@ -1,8 +1,4 @@
-$x0 = INPUT;
-$x1[?] = [];
-
-while (other) {
-    $x1[?] = 'header-'.$x0;
-    $x1[?] = $x1[?].'.txt';
-}
-$x2 = '/home/'.$x1[?];
+touch 'file1';
+touch 'file2';
+touch 'file3';
+touch 'filea';
