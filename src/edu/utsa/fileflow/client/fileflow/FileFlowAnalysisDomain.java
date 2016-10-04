@@ -1,36 +1,38 @@
 package edu.utsa.fileflow.client.fileflow;
 
-import dk.brics.automaton.Automaton;
 import edu.utsa.fileflow.analysis.AnalysisDomain;
 
 public class FileFlowAnalysisDomain extends AnalysisDomain<FileFlowAnalysisDomain> {
 
-	Automaton post = new Automaton();
+	FileStructure post = new FileStructure();
+
+	SymbolTable table = new SymbolTable();
 
 	@Override
 	public FileFlowAnalysisDomain merge(FileFlowAnalysisDomain domain) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("FileFlowAnalysisDomain.merge()");
 	}
 
 	@Override
 	public FileFlowAnalysisDomain top() {
 		FileFlowAnalysisDomain top = new FileFlowAnalysisDomain();
+		top.post = FileStructure.top();
 		return top;
 	}
 
 	@Override
 	public FileFlowAnalysisDomain bottom() {
 		FileFlowAnalysisDomain bottom = new FileFlowAnalysisDomain();
-		bottom.post = Automaton.makeString("/");
+		bottom.post = new FileStructure();
 		return bottom;
 	}
 
 	@Override
 	public int compareTo(FileFlowAnalysisDomain o) {
-		if (post.equals(o.post))
-			return 0;
-		return 1;
+		if (!post.equals(o.post))
+			return 1;
+		return 0;
 	}
 
 	@Override

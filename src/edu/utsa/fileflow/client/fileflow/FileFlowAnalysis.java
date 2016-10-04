@@ -9,11 +9,6 @@ import edu.utsa.fileflow.antlr.FileFlowParser.ValueContext;
 import edu.utsa.fileflow.cfg.FlowPointContext;
 import edu.utsa.fileflow.testutils.GraphvizGenerator;
 
-//domain.files = Automaton.makeString("root");
-//domain.files = domain.files.concatenate(Automaton.makeString("file1"));
-//domain.files = domain.files.union(Automaton.makeString("rootfile1"));
-//GraphvizGenerator.saveDOTToFile(domain.files.toDot(), "automaton.dot");
-
 public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 
 	@Override
@@ -27,7 +22,7 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 	public FileFlowAnalysisDomain touch(FileFlowAnalysisDomain domain, FlowPointContext context)
 			throws AnalysisException {
 		ValueContext v1, v2 = null;
-		String s1 = null, s2 = "";
+		Automaton s1 = null, s2 = Automaton.makeEmpty();
 		{
 			// touch only accepts one expression
 			FunctionCallContext ctx = (FunctionCallContext) context.getContext();
@@ -39,22 +34,28 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 
 		// set s1
 		if (v1.Variable() == null) { // if v1 is a string
-			s1 = v1.String().getText();
+			s1 = Automaton.makeString(v1.String().getText());
 		} else { // if v1 is a variable
-
+			s1 = domain.table.get(v1.String().getText());
 		}
 
 		// set s2 if not null
 		if (v2 != null) {
 			if (v2.Variable() == null) { // if v2 is a string
-				s2 = v2.String().getText();
+				s2 = Automaton.makeString(v2.String().getText());
 			} else { // if v2 is a variable
-
+				s2 = domain.table.get(v2.String().getText());
 			}
 		}
-		
-		String value = "/" + s1 + s2;
-		domain.post = domain.post.union(Automaton.makeString(value));
+
+		// get the value of the expression
+		Automaton value = Automaton.makeChar('/').concatenate(s1);
+		if (!s2.isEmpty())
+			value = value.concatenate(s2);
+
+		// add the automaton to the
+		domain.post.createFile(value);
+
 		return domain;
 	}
 
