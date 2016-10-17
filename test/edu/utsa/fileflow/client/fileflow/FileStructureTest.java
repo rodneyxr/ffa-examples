@@ -3,11 +3,23 @@ package edu.utsa.fileflow.client.fileflow;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import dk.brics.automaton.Automaton;
+import dk.brics.automaton.State;
+import dk.brics.automaton.Transition;
+import edu.utsa.fileflow.testutils.GraphvizGenerator;
 
 public class FileStructureTest {
+
+	/**
+	 * @throws java.lang.Exception
+	 */
+	@Before
+	public void setUp() throws Exception {
+		Automaton.setMinimizeAlways(true);
+	}
 
 	@Test
 	public void testDirectoryExists() {
@@ -21,15 +33,20 @@ public class FileStructureTest {
 
 	@Test
 	public void testGetPathToFile() {
-		Automaton fp = Automaton.makeString("/dir1/file1");
-		fp.minimize();
-		final Automaton ip = FileStructure.INVERSE_PATH;
+		Automaton.setMinimizeAlways(true);
+		Automaton pathToFile = Automaton.makeString("/dir1/");
+		Automaton a = Automaton.makeChar('/');
+		a = a.union(pathToFile);
+		a = a.union(Automaton.makeString("/dir1/file1"));
+		a = FileStructure.getPathToFile(a);
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "automaton.dot");
+	}
 
-		// Automaton pathToFile = fp.(Automaton.makeString("/dir1/"));
-		System.out.println(ip.getCommonPrefix());
-		// System.out.println(pathToFile);
-		// GraphvizGenerator.saveDOTToFile(pathToFile.toDot(), "automaton.dot");
-
+	@Test
+	public void testTransitionToNull() {
+		Automaton a = Automaton.makeChar('/');
+		State s0 = a.getInitialState().getTransitions().toArray(new Transition[1])[0].getDest();
+		assertTrue(s0.getTransitions().size() == 0);
 	}
 
 }

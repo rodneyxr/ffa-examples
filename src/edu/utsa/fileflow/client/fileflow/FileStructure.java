@@ -7,28 +7,34 @@
  */
 package edu.utsa.fileflow.client.fileflow;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import dk.brics.automaton.Automaton;
-import dk.brics.automaton.RegExp;
+import dk.brics.automaton.State;
+import dk.brics.automaton.Transition;
 
 public class FileStructure implements Cloneable {
 
-	public static final Automaton INVERSE_PATH = new RegExp("/.+/").toAutomaton();
+	static {
+		Automaton.setMinimizeAlways(true);
+	}
 
-	Automaton dirs;
+	private static final Automaton SLASH = Automaton.makeChar('/');
+
 	Automaton files;
 
 	public FileStructure() {
-		this(Automaton.makeChar('/'), Automaton.makeEmpty());
+		this.files = SLASH.clone();
 	}
 
 	public static FileStructure top() {
-		Automaton dirs = Automaton.makeChar('/');
-		dirs.concatenate(Automaton.makeAnyString());
-		return new FileStructure(dirs, Automaton.makeAnyString());
+		Automaton files = SLASH.clone();
+		files.concatenate(Automaton.makeAnyString());
+		return new FileStructure(files);
 	}
 
-	private FileStructure(Automaton dirs, Automaton files) {
-		this.dirs = dirs;
+	private FileStructure(Automaton files) {
 		this.files = files;
 	}
 
@@ -45,13 +51,61 @@ public class FileStructure implements Cloneable {
 	}
 
 	public FileStructure createDirectory(Automaton fp) {
-		dirs = dirs.union(fp);
+		Automaton a = fp.concatenate(SLASH);
+		if (!a.equals(fp))
+			fp = a;
+		files = files.union(fp);
 		return this;
 	}
 
 	public boolean directoryExists(String fp) {
-		fp = clean(fp);
-		return dirs.run(fp);
+		fp = cleanDir(fp);
+		return files.run(fp);
+	}
+
+	public static Automaton getPathToFile(Automaton a) {
+		if (!a.isDeterministic())
+			return null;
+
+		// clone since we will be truncating the automaton
+		a = a.clone();
+		State s = a.getInitialState();
+		Set<Transition> transitions;
+		State last = s; // the last slash we have seen
+		Set<State> statesToRemove = new HashSet<>();
+		while (!(transitions = s.getTransitions()).isEmpty()) {
+			State dest = null;
+
+			for (Transition t : transitions) {
+				// save the destination for the first transition
+				if (dest == null)
+					dest = t.getDest();
+				// make sure all transitions go to the same state
+				if (t.getDest() != dest) {
+					return null;
+				}
+
+				// if t is a SLASH then remember this state
+				if (t.getMin() <= '/' && t.getMax() >= '/') {
+					last = s;
+					statesToRemove.clear();
+				}
+			}
+			statesToRemove.add(dest);
+			s = dest;
+		}
+
+		// truncate the automaton from the last slash
+		// a last slash is guaranteed because root is slash
+		boolean skipFirst = true;
+		for (State state : statesToRemove) {
+			if (!skipFirst)
+				state.setAccept(false);
+			else
+				skipFirst = false;
+		}
+		a.removeDeadTransitions();
+		return a;
 	}
 
 	@Override
@@ -59,8 +113,6 @@ public class FileStructure implements Cloneable {
 		if (!(obj instanceof FileStructure))
 			return false;
 		FileStructure o = (FileStructure) obj;
-		if (!dirs.equals(o.dirs))
-			return false;
 		if (!files.equals(o.files))
 			return false;
 		return true;
@@ -78,7 +130,6 @@ public class FileStructure implements Cloneable {
 	@Override
 	protected FileStructure clone() {
 		FileStructure clone = new FileStructure();
-		clone.dirs = dirs.clone();
 		clone.files = files.clone();
 		return clone;
 	}
@@ -91,7 +142,21 @@ public class FileStructure implements Cloneable {
 	 * @return a new String with the cleaned file path.
 	 */
 	private String clean(String fp) {
-		fp = fp.replaceAll("/+", "/");
+		fp = fp.replaceAll("[/\\\\]+", "/");
+		return fp;
+	}
+
+	/**
+	 * Cleans a file path and appends a SLASH if fp does not end with one.
+	 * 
+	 * @param fp
+	 *            The file path to clean.
+	 * @return a new String with the cleaned directory file path.
+	 */
+	private String cleanDir(String fp) {
+		clean(fp);
+		if (!fp.endsWith("/"))
+			fp = fp.concat("/");
 		return fp;
 	}
 
