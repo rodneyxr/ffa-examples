@@ -71,7 +71,6 @@ public class FileStructure implements Cloneable {
 		a = a.clone();
 		State s = a.getInitialState();
 		Set<Transition> transitions;
-		State last = s; // the last slash we have seen
 		Set<State> statesToRemove = new HashSet<>();
 		while (!(transitions = s.getTransitions()).isEmpty()) {
 			State dest = null;
@@ -87,7 +86,6 @@ public class FileStructure implements Cloneable {
 
 				// if t is a SLASH then remember this state
 				if (t.getMin() <= '/' && t.getMax() >= '/') {
-					last = s;
 					statesToRemove.clear();
 				}
 			}
