@@ -106,6 +106,55 @@ public class FileStructure implements Cloneable {
 		return a;
 	}
 
+	public static Automaton makeFileAutomaton(String fp) {
+		boolean isDir = (fp.endsWith("/") || fp.endsWith("\\"));
+		fp = FileStructure.clean(fp);
+		String[] l = fp.split("/");
+		StringBuilder sb = new StringBuilder('/');
+		Automaton a = Automaton.makeChar('/');
+		for (int i = 0; i < l.length; i++) {
+			sb.append(l[i]);
+			if (i != l.length - 1)
+				sb.append('/');
+			else if (isDir)
+				sb.append('/');
+			a = a.union(Automaton.makeString(sb.toString()));
+		}
+		return a;
+	}
+
+	public static Automaton makeDirAutomaton(String fp) {
+		fp = cleanDir(fp);
+		return makeFileAutomaton(fp);
+	}
+
+	/**
+	 * Cleans a string representing a file path.
+	 * 
+	 * @param fp
+	 *            The file path to clean.
+	 * @return a new String with the cleaned file path.
+	 */
+	public static String clean(String fp) {
+		fp = fp.trim();
+		fp = fp.replaceAll("[/\\\\]+", "/");
+		return fp;
+	}
+
+	/**
+	 * Cleans a file path and appends a SLASH if fp does not end with one.
+	 * 
+	 * @param fp
+	 *            The file path to clean.
+	 * @return a new String with the cleaned directory file path.
+	 */
+	public static String cleanDir(String fp) {
+		clean(fp);
+		if (!fp.endsWith("/"))
+			fp = fp.concat("/");
+		return fp;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof FileStructure))
@@ -130,32 +179,6 @@ public class FileStructure implements Cloneable {
 		FileStructure clone = new FileStructure();
 		clone.files = files.clone();
 		return clone;
-	}
-
-	/**
-	 * Cleans a string representing a file path.
-	 * 
-	 * @param fp
-	 *            The file path to clean.
-	 * @return a new String with the cleaned file path.
-	 */
-	private String clean(String fp) {
-		fp = fp.replaceAll("[/\\\\]+", "/");
-		return fp;
-	}
-
-	/**
-	 * Cleans a file path and appends a SLASH if fp does not end with one.
-	 * 
-	 * @param fp
-	 *            The file path to clean.
-	 * @return a new String with the cleaned directory file path.
-	 */
-	private String cleanDir(String fp) {
-		clean(fp);
-		if (!fp.endsWith("/"))
-			fp = fp.concat("/");
-		return fp;
 	}
 
 }

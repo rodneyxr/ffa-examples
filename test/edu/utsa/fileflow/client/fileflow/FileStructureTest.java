@@ -63,7 +63,7 @@ public class FileStructureTest {
 	public void testTransitionToNull() {
 		Automaton a = Automaton.makeChar('/');
 		State s0 = a.getInitialState().getTransitions().toArray(new Transition[1])[0].getDest();
-		assertTrue(s0.getTransitions().size() == 0);
+		assertTrue(s0.getTransitions().isEmpty());
 	}
 
 }
