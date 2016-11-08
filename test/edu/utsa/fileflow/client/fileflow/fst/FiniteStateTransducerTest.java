@@ -12,7 +12,7 @@ import edu.utsa.fileflow.testutils.GraphvizGenerator;
 public class FiniteStateTransducerTest {
 
 	final Automaton VALID_CHARS = new RegExp("[a-zA-Z0-9.-_]{1}").toAutomaton();
-	
+
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -22,19 +22,19 @@ public class FiniteStateTransducerTest {
 		FiniteStateTransducer.setMinimizeAlways(true);
 	}
 
-//	@Test
-//	public void testCreateFile() {
-//		Automaton a = FileStructure.makeFileAutomaton("/home/file.txt");
-//		GraphvizGenerator.saveDOTToFile(a.toDot(), "automaton.dot");
-//	}
+	// @Test
+	// public void testCreateFile() {
+	// Automaton a = FileStructure.makeFileAutomaton("/home/file.txt");
+	// GraphvizGenerator.saveDOTToFile(a.toDot(), "automaton.dot");
+	// }
 
 	@Test
 	public void testCreateFST() {
-		 FiniteStateTransducer fst = FiniteStateTransducer.parentDir();
-		 Automaton file = FileStructure.makeFileAutomaton("/home/file1");
-		 Automaton pathToFile = fst.intersection(file);
-		 
-		 GraphvizGenerator.saveDOTToFile(pathToFile.toDot(), "automaton.dot");
+		FiniteStateTransducer fst = FiniteStateTransducer.parentDir();
+		Automaton file = FileStructure.makeFileAutomaton("/home/dir/file1");
+		Automaton pathToFile = fst.intersection(file);
+		// GraphvizGenerator.saveDOTToFile(pathToFile.toDot(), "automaton.dot");
+		GraphvizGenerator.saveDOTToFile(pathToFile.toDot(), "automaton.dot");
 	}
 
 }
