@@ -1,18 +1,21 @@
 package edu.utsa.fileflow.client.fileflow;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import dk.brics.automaton.Automaton;
+import dk.brics.automaton.FiniteStateTransducer;
 import dk.brics.automaton.RegExp;
 import dk.brics.automaton.State;
 import dk.brics.automaton.Transition;
+import edu.utsa.fileflow.testutils.GraphvizGenerator;
 
 public class FileStructureTest {
+
+	FiniteStateTransducer FST = FiniteStateTransducer.parentDir();
 
 	/**
 	 * @throws java.lang.Exception
@@ -42,9 +45,10 @@ public class FileStructureTest {
 		a = a.union(Automaton.makeString("/df"));
 		a = a.union(reg.toAutomaton());
 		a = a.union(r2.toAutomaton());
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "complex.orig.dot");
 		a = FileStructure.getPathToFile(a);
-		assertNotNull(a); // TODO: create better assertion
-		// GraphvizGenerator.saveDOTToFile(a.toDot(), "automaton.dot");
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "complex.dot");
+		// TODO: Create some assertions
 	}
 
 	@Test
@@ -54,9 +58,10 @@ public class FileStructureTest {
 		Automaton a = Automaton.makeChar('/');
 		a = a.union(pathToFile);
 		a = a.union(Automaton.makeString("/dir1/file1"));
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "singleton.orig.dot");
 		a = FileStructure.getPathToFile(a);
-		assertNotNull(a); // TODO: create better assertion
-		// GraphvizGenerator.saveDOTToFile(a.toDot(), "automaton.dot");
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "singleton.dot");
+		// TODO: Create some assertions
 	}
 
 	@Test

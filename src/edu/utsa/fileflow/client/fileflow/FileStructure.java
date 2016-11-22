@@ -7,12 +7,8 @@
  */
 package edu.utsa.fileflow.client.fileflow;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import dk.brics.automaton.Automaton;
-import dk.brics.automaton.State;
-import dk.brics.automaton.Transition;
+import dk.brics.automaton.FiniteStateTransducer;
 
 public class FileStructure implements Cloneable {
 
@@ -21,6 +17,7 @@ public class FileStructure implements Cloneable {
 	}
 
 	private static final Automaton SLASH = Automaton.makeChar('/');
+	private static final FiniteStateTransducer FST_PARENT = FiniteStateTransducer.parentDir();
 
 	Automaton files;
 
@@ -39,7 +36,8 @@ public class FileStructure implements Cloneable {
 	}
 
 	/**
-	 * Creates a file at the file path provided. Directory must exist for this operation to be successful.
+	 * Creates a file at the file path provided. Directory must exist for this
+	 * operation to be successful.
 	 * 
 	 * @param fp
 	 *            The file path to create the file.
@@ -64,46 +62,7 @@ public class FileStructure implements Cloneable {
 	}
 
 	public static Automaton getPathToFile(Automaton a) {
-		if (!a.isDeterministic())
-			return null;
-
-		// clone since we will be truncating the automaton
-		a = a.clone();
-		State s = a.getInitialState();
-		Set<Transition> transitions;
-		Set<State> statesToRemove = new HashSet<>();
-		while (!(transitions = s.getTransitions()).isEmpty()) {
-			State dest = null;
-
-			for (Transition t : transitions) {
-				// save the destination for the first transition
-				if (dest == null)
-					dest = t.getDest();
-				// make sure all transitions go to the same state
-				if (t.getDest() != dest) {
-					return null;
-				}
-
-				// if t is a SLASH then remember this state
-				if (t.getMin() <= '/' && t.getMax() >= '/') {
-					statesToRemove.clear();
-				}
-			}
-			statesToRemove.add(dest);
-			s = dest;
-		}
-
-		// truncate the automaton from the last slash
-		// a last slash is guaranteed because root is slash
-		boolean skipFirst = true;
-		for (State state : statesToRemove) {
-			if (!skipFirst)
-				state.setAccept(false);
-			else
-				skipFirst = false;
-		}
-		a.removeDeadTransitions();
-		return a;
+		return FST_PARENT.intersection(a);
 	}
 
 	public static Automaton makeFileAutomaton(String fp) {
