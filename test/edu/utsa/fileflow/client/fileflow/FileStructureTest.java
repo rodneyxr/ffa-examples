@@ -23,7 +23,6 @@ public class FileStructureTest {
 	@Before
 	public void setUp() throws Exception {
 		Automaton.setMinimizeAlways(true);
-		Automaton.setMinimization(Automaton.MINIMIZE_BRZOZOWSKI);
 	}
 
 	@Test
@@ -38,7 +37,6 @@ public class FileStructureTest {
 
 	@Test
 	public void testGetPathToFileComplex() {
-		Automaton.setMinimizeAlways(true);
 		Automaton a = Automaton.makeChar('/');
 		RegExp reg = new RegExp("/dir[1-9]*/q");
 		RegExp r2 = new RegExp("/dir[1-9]*/");
@@ -54,7 +52,6 @@ public class FileStructureTest {
 
 	@Test
 	public void testGetPathToFileSingleton() {
-		Automaton.setMinimizeAlways(true);
 		Automaton pathToFile = Automaton.makeString("/dir1/");
 		Automaton a = Automaton.makeChar('/');
 		a = a.union(pathToFile);
@@ -63,6 +60,24 @@ public class FileStructureTest {
 		a = FileStructure.getPathToFile(a);
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "singleton.dot");
 		// TODO: Create some assertions
+	}
+	
+	@Test
+	public void testGetPathToFileInRoot() {
+		FileStructure fs = new FileStructure();
+		fs.createFile(Automaton.makeString("/test"));
+		GraphvizGenerator.saveDOTToFile(fs.files.toDot(), "file_in_root.orig.dot");
+		Automaton a = FileStructure.getPathToFile(fs.files);
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "file_in_root.dot");
+	}
+	
+	@Test
+	public void testGetPathToDirectoryInRoot() {
+		FileStructure fs = new FileStructure();
+		fs.createDirectory(Automaton.makeString("/home"));
+		GraphvizGenerator.saveDOTToFile(fs.files.toDot(), "dir_in_root.orig.dot");
+		Automaton a = FileStructure.getPathToFile(fs.files);
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "dir_in_root.dot");
 	}
 
 	@Test
