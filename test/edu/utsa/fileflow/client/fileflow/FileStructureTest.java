@@ -23,6 +23,7 @@ public class FileStructureTest {
 	@Before
 	public void setUp() throws Exception {
 		Automaton.setMinimizeAlways(true);
+		Automaton.setMinimization(Automaton.MINIMIZE_BRZOZOWSKI);
 	}
 
 	@Test

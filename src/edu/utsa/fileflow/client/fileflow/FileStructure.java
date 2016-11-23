@@ -13,6 +13,7 @@ import dk.brics.automaton.FiniteStateTransducer;
 public class FileStructure implements Cloneable {
 
 	static {
+		Automaton.setMinimization(Automaton.MINIMIZE_BRZOZOWSKI);
 		Automaton.setMinimizeAlways(true);
 	}
 
