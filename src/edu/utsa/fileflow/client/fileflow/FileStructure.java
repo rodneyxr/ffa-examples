@@ -1,6 +1,5 @@
 /**
- * This class represents a file structure using two automatons. One of the automatons contains all directories and the
- * other contains the files.
+ * This class represents a file structure using an automaton.
  * 
  * @author Rodney Rodriguez
  *
@@ -37,15 +36,20 @@ public class FileStructure implements Cloneable {
 	}
 
 	/**
-	 * Creates a file at the file path provided. Directory must exist for this
-	 * operation to be successful.
+	 * Creates a file at the file path provided. Directory must exist for this operation to be successful.
 	 * 
 	 * @param fp
 	 *            The file path to create the file.
 	 * @return this FileStructure.
 	 */
 	public FileStructure createFile(Automaton fp) {
-		files = files.union(fp);
+		if (directoryExists(getParentDirectory(fp))) {
+			files = files.union(fp);
+		} else {
+			System.out.println("touch: cannot touch: No such file or directory");
+			// TODO: continue here
+			// parent does not exist here
+		}
 		return this;
 	}
 
@@ -62,10 +66,22 @@ public class FileStructure implements Cloneable {
 		return files.run(fp);
 	}
 
-	public static Automaton getPathToFile(Automaton a) {
+	public boolean directoryExists(Automaton fp) {
+		return fp.subsetOf(files);
+	}
+
+	public static Automaton getParentDirectory(Automaton a) {
 		return FST_PARENT.intersection(a);
 	}
 
+	/**
+	 * This is a special version of {@link Automaton#makeString}. It creates an automaton representation of a file that
+	 * is compatible and can be inserted into a {@link FileStructure}.
+	 * 
+	 * @param fp
+	 *            The String representation of the file path.
+	 * @return an automaton representation of <code>fp</code>.
+	 */
 	public static Automaton makeFileAutomaton(String fp) {
 		boolean isDir = (fp.endsWith("/") || fp.endsWith("\\"));
 		fp = FileStructure.clean(fp);

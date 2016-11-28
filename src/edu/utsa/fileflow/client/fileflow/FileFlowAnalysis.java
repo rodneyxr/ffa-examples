@@ -34,7 +34,7 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 
 		// set s1
 		if (v1.Variable() == null) { // if v1 is a string
-			s1 = Automaton.makeString(v1.String().getText());
+			s1 = FileStructure.makeFileAutomaton(v1.String().getText());
 		} else { // if v1 is a variable
 			s1 = domain.table.get(v1.String().getText());
 		}
@@ -42,7 +42,7 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 		// set s2 if not null
 		if (v2 != null) {
 			if (v2.Variable() == null) { // if v2 is a string
-				s2 = Automaton.makeString(v2.String().getText());
+				s2 = FileStructure.makeFileAutomaton(v2.String().getText());
 			} else { // if v2 is a variable
 				s2 = domain.table.get(v2.String().getText());
 			}

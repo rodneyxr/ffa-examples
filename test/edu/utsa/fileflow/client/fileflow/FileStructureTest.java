@@ -3,7 +3,6 @@ package edu.utsa.fileflow.client.fileflow;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import dk.brics.automaton.Automaton;
@@ -15,14 +14,13 @@ import edu.utsa.fileflow.testutils.GraphvizGenerator;
 
 public class FileStructureTest {
 
-	FiniteStateTransducer FST = FiniteStateTransducer.parentDir();
+	final Automaton VALID_CHARS = new RegExp("[a-zA-Z0-9.-_]{1}").toAutomaton();
+	final FiniteStateTransducer FST_PARENT = FiniteStateTransducer.parentDir();
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-		Automaton.setMinimizeAlways(true);
+	@Test
+	public void testCreateFSTParent() {
+		FiniteStateTransducer fst = FiniteStateTransducer.parentDir();
+		GraphvizGenerator.saveDOTToFile(fst.toDot(), "test/fst_parent.dot");
 	}
 
 	@Test
@@ -44,9 +42,9 @@ public class FileStructureTest {
 		a = a.union(Automaton.makeString("/df"));
 		a = a.union(reg.toAutomaton());
 		a = a.union(r2.toAutomaton());
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "complex.orig.dot");
-		a = FileStructure.getPathToFile(a);
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "complex.dot");
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/complex.orig.dot");
+		a = FileStructure.getParentDirectory(a);
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/complex.dot");
 		// TODO: Create some assertions
 	}
 
@@ -56,28 +54,28 @@ public class FileStructureTest {
 		Automaton a = Automaton.makeChar('/');
 		a = a.union(pathToFile);
 		a = a.union(Automaton.makeString("/dir1/file1"));
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "singleton.orig.dot");
-		a = FileStructure.getPathToFile(a);
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "singleton.dot");
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/singleton.orig.dot");
+		a = FileStructure.getParentDirectory(a);
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/singleton.dot");
 		// TODO: Create some assertions
 	}
-	
+
 	@Test
 	public void testGetPathToFileInRoot() {
 		FileStructure fs = new FileStructure();
 		fs.createFile(Automaton.makeString("/test"));
-		GraphvizGenerator.saveDOTToFile(fs.files.toDot(), "file_in_root.orig.dot");
-		Automaton a = FileStructure.getPathToFile(fs.files);
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "file_in_root.dot");
+		GraphvizGenerator.saveDOTToFile(fs.files.toDot(), "test/file_in_root.orig.dot");
+		Automaton a = FileStructure.getParentDirectory(fs.files);
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/file_in_root.dot");
 	}
-	
+
 	@Test
 	public void testGetPathToDirectoryInRoot() {
 		FileStructure fs = new FileStructure();
 		fs.createDirectory(Automaton.makeString("/home"));
-		GraphvizGenerator.saveDOTToFile(fs.files.toDot(), "dir_in_root.orig.dot");
-		Automaton a = FileStructure.getPathToFile(fs.files);
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "dir_in_root.dot");
+		GraphvizGenerator.saveDOTToFile(fs.files.toDot(), "test/dir_in_root.orig.dot");
+		Automaton a = FileStructure.getParentDirectory(fs.files);
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/dir_in_root.dot");
 	}
 
 	@Test
@@ -85,6 +83,15 @@ public class FileStructureTest {
 		Automaton a = Automaton.makeChar('/');
 		State s0 = a.getInitialState().getTransitions().toArray(new Transition[1])[0].getDest();
 		assertTrue(s0.getTransitions().isEmpty());
+	}
+
+	@Test
+	public void testMakeFileAutomaton() {
+		String fpText = "file1";
+		Automaton fp = FileStructure.makeFileAutomaton(fpText);
+		GraphvizGenerator.saveDOTToFile(fp.toDot(), "test/make_file.dot");
+		assertTrue(fp.run("/"));
+		assertTrue(fp.run("/file1"));
 	}
 
 }

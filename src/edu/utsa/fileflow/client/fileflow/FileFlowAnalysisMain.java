@@ -12,6 +12,7 @@ import edu.utsa.fileflow.utilities.FileFlowHelper;
 
 public class FileFlowAnalysisMain {
 
+	public static boolean DEBUG = true;
 	private static final String TEST_SCRIPT = "scripts/test.ffa";
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
@@ -36,9 +37,11 @@ public class FileFlowAnalysisMain {
 	 */
 	private static void writeDOT(FlowPoint cfg) {
 		String dot = GraphvizGenerator.generateDOT(cfg);
-		GraphvizGenerator.saveDOTToFile(dot, TEST_SCRIPT + ".dot");
-		System.out.println("DOT file written to: '" + TEST_SCRIPT + ".dot'");
-		System.out.println();
+		GraphvizGenerator.saveDOTToFile(dot, TEST_SCRIPT + ".cfg.dot");
+		if (FileFlowAnalysisMain.DEBUG) {
+			System.out.println("DOT file written to: 'dot/" + TEST_SCRIPT + ".dot'");
+			System.out.println();
+		}
 	}
 
 }
