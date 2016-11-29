@@ -36,19 +36,21 @@ public class FileStructure implements Cloneable {
 	}
 
 	/**
-	 * Creates a file at the file path provided. Directory must exist for this operation to be successful.
+	 * Creates a file at the file path provided. Directory must exist for this
+	 * operation to be successful.
 	 * 
 	 * @param fp
 	 *            The file path to create the file.
 	 * @return this FileStructure.
 	 */
 	public FileStructure createFile(Automaton fp) {
-		if (directoryExists(getParentDirectory(fp))) {
+		Automaton parent = getParentDirectory(fp);
+		if (directoryExists(parent)) {
 			files = files.union(fp);
 		} else {
-			System.out.println("touch: cannot touch: No such file or directory");
-			// TODO: continue here
 			// parent does not exist here
+			// TODO: decide whether to log this or stop execution
+			System.out.println("touch: cannot touch: No such file or directory");
 		}
 		return this;
 	}
@@ -75,8 +77,9 @@ public class FileStructure implements Cloneable {
 	}
 
 	/**
-	 * This is a special version of {@link Automaton#makeString}. It creates an automaton representation of a file that
-	 * is compatible and can be inserted into a {@link FileStructure}.
+	 * This is a special version of {@link Automaton#makeString}. It creates an
+	 * automaton representation of a file that is compatible and can be inserted
+	 * into a {@link FileStructure}.
 	 * 
 	 * @param fp
 	 *            The String representation of the file path.
@@ -86,7 +89,7 @@ public class FileStructure implements Cloneable {
 		boolean isDir = (fp.endsWith("/") || fp.endsWith("\\"));
 		fp = FileStructure.clean(fp);
 		String[] l = fp.split("/");
-		StringBuilder sb = new StringBuilder('/');
+		StringBuilder sb = new StringBuilder("/");
 		Automaton a = Automaton.makeChar('/');
 		for (int i = 0; i < l.length; i++) {
 			sb.append(l[i]);

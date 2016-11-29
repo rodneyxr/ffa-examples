@@ -21,6 +21,7 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 	@Override
 	public FileFlowAnalysisDomain touch(FileFlowAnalysisDomain domain, FlowPointContext context)
 			throws AnalysisException {
+		// NOTE: touch $x0.$x1 not supported
 		ValueContext v1, v2 = null;
 		Automaton s1 = null, s2 = Automaton.makeEmpty();
 		{
@@ -42,6 +43,7 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 		// set s2 if not null
 		if (v2 != null) {
 			if (v2.Variable() == null) { // if v2 is a string
+				// FIXME: Should be a regular automaton, not a file path
 				s2 = FileStructure.makeFileAutomaton(v2.String().getText());
 			} else { // if v2 is a variable
 				s2 = domain.table.get(v2.String().getText());
@@ -49,7 +51,7 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 		}
 
 		// get the value of the expression
-		Automaton value = Automaton.makeChar('/').concatenate(s1);
+		Automaton value = domain.post.files.union(s1);
 		if (!s2.isEmpty())
 			value = value.concatenate(s2);
 
