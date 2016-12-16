@@ -19,6 +19,7 @@ public class FileStructure implements Cloneable {
 	private static final Automaton SLASH = Automaton.makeChar('/');
 	private static final FiniteStateTransducer FST_PARENT = FiniteStateTransducer.parentDir();
 
+	private VariableAutomaton cwd = new VariableAutomaton("/");
 	Automaton files;
 
 	public FileStructure() {
@@ -36,24 +37,37 @@ public class FileStructure implements Cloneable {
 	}
 
 	/**
+	 * Prepends the current working directory to the file path variable given.
+	 * 
+	 * @param fp
+	 *            The file path to be appended to the current working directory.
+	 * @return the absolute file path as an automaton.
+	 */
+	private Automaton makeAbsolute(VariableAutomaton fp) {
+		return cwd.getAutomaton().concatenate(fp.getAutomaton());
+	}
+
+	/**
 	 * Creates a file at the file path provided. Directory must exist for this
 	 * operation to be successful.
 	 * 
 	 * @param fp
 	 *            The file path to create the file.
-	 * @return this FileStructure.
+	 * @return true if the operation was successful
 	 */
-	public FileStructure createFile(Automaton fp) {
-		Automaton parent = getParentDirectory(fp);
+	public boolean createFile(VariableAutomaton fp) {
+		Automaton a = makeAbsolute(fp);
+		Automaton parent = getParentDirectory(a);
 		if (directoryExists(parent)) {
-			files = files.union(fp);
+			files = files.union(a);
 		} else {
 			// parent does not exist here
 			// TODO: decide whether to log this or stop execution
 			// TODO: concat then change all SLASH to accept states
 			System.out.println("touch: cannot touch: No such file or directory");
+			return false;
 		}
-		return this;
+		return true;
 	}
 
 	public FileStructure createDirectory(Automaton fp) {
@@ -87,41 +101,13 @@ public class FileStructure implements Cloneable {
 	 * @return an automaton representation of <code>fp</code>.
 	 */
 	public static Automaton makeFileAutomaton(String fp) {
-		Automaton a = makeVariableAutomaton("/" + fp);
+		Automaton a = new VariableAutomaton("/" + fp).getAutomaton();
 		return a;
 	}
 
 	public static Automaton makeDirAutomaton(String fp) {
 		fp = cleanDir(fp);
 		return makeFileAutomaton(fp);
-	}
-
-	public static Automaton makeVariableAutomaton(String fp) {
-		boolean startsWithSlash = (fp.startsWith("/") || fp.startsWith("\\"));
-		boolean endsWithSlash = (fp.endsWith("/") || fp.endsWith("\\"));
-		StringBuilder sb = new StringBuilder();
-		Automaton a;
-
-		fp = clean(fp);
-		String[] l = fp.split("/");
-
-		// add a single initial slash if fp starts with slash
-		if (startsWithSlash) {
-			a = Automaton.makeChar('/');
-		} else {
-			a = Automaton.makeEmpty();
-		}
-
-		// build the automaton
-		for (int i = 0; i < l.length; i++) {
-			sb.append(l[i]);
-			if (i != l.length - 1)
-				sb.append('/');
-			else if (endsWithSlash)
-				sb.append('/');
-			a = a.union(Automaton.makeString(sb.toString()));
-		}
-		return a;
 	}
 
 	/**
