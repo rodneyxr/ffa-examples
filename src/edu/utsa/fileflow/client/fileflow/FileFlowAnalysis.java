@@ -22,6 +22,7 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 	public FileFlowAnalysisDomain touch(FileFlowAnalysisDomain domain, FlowPointContext context)
 			throws AnalysisException {
 		// NOTE: touch $x0.$x1 not supported
+		// TODO: concat should only be supported for assignment in grammar
 		ValueContext v1, v2 = null;
 		Automaton s1 = null, s2 = Automaton.makeEmpty();
 		{
@@ -44,7 +45,7 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 		if (v2 != null) {
 			if (v2.Variable() == null) { // if v2 is a string
 				// FIXME: Should be a regular automaton, not a file path
-				s2 = FileStructure.makeFileAutomaton(v2.String().getText());
+				s2 = FileStructure.makeVariableAutomaton(v2.String().getText());
 			} else { // if v2 is a variable
 				s2 = domain.table.get(v2.String().getText());
 			}

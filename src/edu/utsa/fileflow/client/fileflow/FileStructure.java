@@ -50,6 +50,7 @@ public class FileStructure implements Cloneable {
 		} else {
 			// parent does not exist here
 			// TODO: decide whether to log this or stop execution
+			// TODO: concat then change all SLASH to accept states
 			System.out.println("touch: cannot touch: No such file or directory");
 		}
 		return this;
@@ -86,25 +87,41 @@ public class FileStructure implements Cloneable {
 	 * @return an automaton representation of <code>fp</code>.
 	 */
 	public static Automaton makeFileAutomaton(String fp) {
-		boolean isDir = (fp.endsWith("/") || fp.endsWith("\\"));
-		fp = FileStructure.clean(fp);
-		String[] l = fp.split("/");
-		StringBuilder sb = new StringBuilder("/");
-		Automaton a = Automaton.makeChar('/');
-		for (int i = 0; i < l.length; i++) {
-			sb.append(l[i]);
-			if (i != l.length - 1)
-				sb.append('/');
-			else if (isDir)
-				sb.append('/');
-			a = a.union(Automaton.makeString(sb.toString()));
-		}
+		Automaton a = makeVariableAutomaton("/" + fp);
 		return a;
 	}
 
 	public static Automaton makeDirAutomaton(String fp) {
 		fp = cleanDir(fp);
 		return makeFileAutomaton(fp);
+	}
+
+	public static Automaton makeVariableAutomaton(String fp) {
+		boolean startsWithSlash = (fp.startsWith("/") || fp.startsWith("\\"));
+		boolean endsWithSlash = (fp.endsWith("/") || fp.endsWith("\\"));
+		StringBuilder sb = new StringBuilder();
+		Automaton a;
+
+		fp = clean(fp);
+		String[] l = fp.split("/");
+
+		// add a single initial slash if fp starts with slash
+		if (startsWithSlash) {
+			a = Automaton.makeChar('/');
+		} else {
+			a = Automaton.makeEmpty();
+		}
+
+		// build the automaton
+		for (int i = 0; i < l.length; i++) {
+			sb.append(l[i]);
+			if (i != l.length - 1)
+				sb.append('/');
+			else if (endsWithSlash)
+				sb.append('/');
+			a = a.union(Automaton.makeString(sb.toString()));
+		}
+		return a;
 	}
 
 	/**

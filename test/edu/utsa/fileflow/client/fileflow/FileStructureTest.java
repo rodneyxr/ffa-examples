@@ -43,9 +43,14 @@ public class FileStructureTest {
 		a = a.union(reg.toAutomaton());
 		a = a.union(r2.toAutomaton());
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/complex.orig.dot");
+		assertTrue(a.run("/df"));
+		
 		a = FileStructure.getParentDirectory(a);
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/complex.dot");
-		// TODO: Create some assertions
+		assertTrue(a.run("/dir1/"));
+		assertTrue(a.run("/dir4/"));
+		assertTrue(a.run("/dir9/"));
+		assertFalse(a.run("/df"));
 	}
 
 	@Test
@@ -54,10 +59,14 @@ public class FileStructureTest {
 		Automaton a = Automaton.makeChar('/');
 		a = a.union(pathToFile);
 		a = a.union(Automaton.makeString("/dir1/file1"));
+		assertTrue(a.run("/dir1/file1"));
+		assertFalse(a.run("/dir1/file1/"));
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/singleton.orig.dot");
+		
 		a = FileStructure.getParentDirectory(a);
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/singleton.dot");
-		// TODO: Create some assertions
+		assertTrue(a.run("/dir1/"));
+		assertFalse(a.run("/dir1/file1"));
 	}
 
 	@Test
@@ -65,6 +74,8 @@ public class FileStructureTest {
 		FileStructure fs = new FileStructure();
 		fs.createFile(Automaton.makeString("/test"));
 		GraphvizGenerator.saveDOTToFile(fs.files.toDot(), "test/file_in_root.orig.dot");
+		// TODO: create assertions
+		
 		Automaton a = FileStructure.getParentDirectory(fs.files);
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/file_in_root.dot");
 	}
@@ -91,7 +102,20 @@ public class FileStructureTest {
 		Automaton fp = FileStructure.makeFileAutomaton(fpText);
 		GraphvizGenerator.saveDOTToFile(fp.toDot(), "test/make_file.dot");
 		assertTrue(fp.run("/"));
+		assertFalse(fp.run("//"));
 		assertTrue(fp.run("/file1"));
+	}
+	
+	@Test
+	public void testMakeDirAutomaton() {
+		String fpText = "dir";
+		Automaton fp = FileStructure.makeDirAutomaton(fpText);
+		GraphvizGenerator.saveDOTToFile(fp.toDot(), "test/make_dir.dot");
+		assertTrue(fp.run("/"));
+		assertFalse(fp.run("//"));
+		
+		assertTrue(fp.run("/dir/"));
+		assertFalse(fp.run("/dir"));
 	}
 
 }
