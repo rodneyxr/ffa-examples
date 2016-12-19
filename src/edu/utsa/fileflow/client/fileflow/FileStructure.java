@@ -16,24 +16,31 @@ public class FileStructure implements Cloneable {
 		Automaton.setMinimizeAlways(true);
 	}
 
-	private static final Automaton SLASH = Automaton.makeChar('/');
+	private static final Automaton SEPARATOR = Automaton.makeChar('/');
 	private static final FiniteStateTransducer FST_PARENT = FiniteStateTransducer.parentDir();
 
 	private VariableAutomaton cwd = new VariableAutomaton("/");
 	Automaton files;
 
 	public FileStructure() {
-		this.files = SLASH.clone();
+		this.files = SEPARATOR.clone();
 	}
 
 	public static FileStructure top() {
-		Automaton files = SLASH.clone();
+		Automaton files = SEPARATOR.clone();
 		files.concatenate(Automaton.makeAnyString());
 		return new FileStructure(files);
 	}
 
 	private FileStructure(Automaton files) {
 		this.files = files;
+	}
+
+	/**
+	 * @return a clone of the separator automaton.
+	 */
+	public static Automaton separator() {
+		return SEPARATOR.clone();
 	}
 
 	/**
@@ -63,7 +70,6 @@ public class FileStructure implements Cloneable {
 		} else {
 			// parent does not exist here
 			// TODO: decide whether to log this or stop execution
-			// TODO: concat then change all SLASH to accept states
 			System.out.println("touch: cannot touch: No such file or directory");
 			return false;
 		}
@@ -71,7 +77,7 @@ public class FileStructure implements Cloneable {
 	}
 
 	public FileStructure createDirectory(Automaton fp) {
-		Automaton a = fp.concatenate(SLASH);
+		Automaton a = fp.concatenate(SEPARATOR);
 		if (!a.equals(fp))
 			fp = a;
 		files = files.union(fp);
@@ -93,7 +99,7 @@ public class FileStructure implements Cloneable {
 
 	/**
 	 * This is a special version of {@link Automaton#makeString}. It creates an
-	 * automaton representation of a file that is compatible and can be inserted
+	 * automaton representation of a file that is compatible with and can be inserted
 	 * into a {@link FileStructure}.
 	 * 
 	 * @param fp
@@ -101,8 +107,7 @@ public class FileStructure implements Cloneable {
 	 * @return an automaton representation of <code>fp</code>.
 	 */
 	public static Automaton makeFileAutomaton(String fp) {
-		Automaton a = new VariableAutomaton("/" + fp).getAutomaton();
-		return a;
+		return new VariableAutomaton("/" + fp).getAutomaton();
 	}
 
 	public static Automaton makeDirAutomaton(String fp) {
