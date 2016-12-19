@@ -16,11 +16,29 @@ public class FileStructureTest {
 
 	final Automaton VALID_CHARS = new RegExp("[a-zA-Z0-9.-_]{1}").toAutomaton();
 	final FiniteStateTransducer FST_PARENT = FiniteStateTransducer.parentDir();
+	final FiniteStateTransducer FST_REMOVE_SEP = FiniteStateTransducer.removeDoubleSeparator();
 
 	@Test
 	public void testCreateFSTParent() {
 		FiniteStateTransducer fst = FiniteStateTransducer.parentDir();
 		GraphvizGenerator.saveDOTToFile(fst.toDot(), "test/fst_parent.dot");
+	}
+
+	@Test
+	public void testCreateFSTRemoveDoubleSeparator() {
+		FiniteStateTransducer fst = FiniteStateTransducer.removeDoubleSeparator();
+		GraphvizGenerator.saveDOTToFile(fst.toDot(), "test/fst_rm_double_sep.dot");
+	}
+
+	@Test
+	public void testRemoveDoubleSep() {
+		// Automaton expected = Automaton.makeString("dir1/file1");
+		Automaton a1 = Automaton.makeString("dir1/");
+		Automaton a2 = Automaton.makeString("/file1");
+		Automaton a = a1.concatenate(a2);
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/rm_double_sep.orig.dot");
+		a = FST_REMOVE_SEP.intersection(a);
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/rm_double_sep.dot");
 	}
 
 	@Test
