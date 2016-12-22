@@ -31,6 +31,15 @@ public class FileStructureTest {
 	}
 
 	@Test
+	public void testRemoveDoubleSepEnd() {
+		// Automaton expected = Automaton.makeString("dir1/file1");
+		Automaton a = Automaton.makeString("a//");
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/rm_double_sep_end.orig.dot");
+		a = FST_REMOVE_SEP.intersection(a);
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/rm_double_sep_end.dot");
+	}
+
+	@Test
 	public void testRemoveDoubleSep() {
 		// Automaton expected = Automaton.makeString("dir1/file1");
 		Automaton a1 = Automaton.makeString("dir1/");
