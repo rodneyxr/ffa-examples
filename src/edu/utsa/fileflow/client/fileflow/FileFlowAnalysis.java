@@ -34,8 +34,7 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 
 		// get the variable from the symbol table or create a new one
 		if (v.Variable() != null) { // if v is a variable
-			// throw new RuntimeException("Variables are not yet implemented.");
-			va = domain.table.get(v.String().getText());
+			va = domain.table.get(v.Variable().getText());
 		} else { // if v is a string literal
 			va = new VariableAutomaton(v.String().getText());
 		}

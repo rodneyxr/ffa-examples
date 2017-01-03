@@ -4,8 +4,9 @@
 package edu.utsa.fileflow.client.fileflow;
 
 import dk.brics.automaton.Automaton;
+import edu.utsa.fileflow.analysis.Mergeable;
 
-public class VariableAutomaton {
+public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 
 	private Automaton variable;
 
@@ -84,6 +85,16 @@ public class VariableAutomaton {
 	protected Automaton getAutomaton() {
 		// TODO: make all '/' accept states and remove duplicates
 		return variable;
+	}
+
+	@Override
+	public VariableAutomaton merge(VariableAutomaton other) {
+		return union(other);
+	}
+
+	@Override
+	public VariableAutomaton clone() {
+		return new VariableAutomaton(variable.clone());
 	}
 
 }

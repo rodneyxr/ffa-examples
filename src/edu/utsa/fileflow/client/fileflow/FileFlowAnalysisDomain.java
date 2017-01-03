@@ -10,8 +10,10 @@ public class FileFlowAnalysisDomain extends AnalysisDomain<FileFlowAnalysisDomai
 
 	@Override
 	public FileFlowAnalysisDomain merge(FileFlowAnalysisDomain domain) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("FileFlowAnalysisDomain.merge()");
+		// merge the symbol table
+		table = (SymbolTable) table.merge(domain.table);
+		// TODO: merge file structures
+		return this;
 	}
 
 	@Override
@@ -30,6 +32,8 @@ public class FileFlowAnalysisDomain extends AnalysisDomain<FileFlowAnalysisDomai
 
 	@Override
 	public int compareTo(FileFlowAnalysisDomain o) {
+		if (!table.equals(o.table))
+			return 1;
 		if (!post.equals(o.post))
 			return 1;
 		return 0;
@@ -39,6 +43,9 @@ public class FileFlowAnalysisDomain extends AnalysisDomain<FileFlowAnalysisDomai
 	public FileFlowAnalysisDomain clone() {
 		FileFlowAnalysisDomain clone = new FileFlowAnalysisDomain();
 		clone.post = post.clone();
+		table.forEach((k, v) -> {
+			clone.table.put(k, v.clone());
+		});
 		return clone;
 	}
 

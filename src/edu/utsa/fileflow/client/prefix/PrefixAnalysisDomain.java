@@ -19,7 +19,7 @@ public class PrefixAnalysisDomain extends AnalysisDomain<PrefixAnalysisDomain> {
 	@Override
 	public PrefixAnalysisDomain merge(PrefixAnalysisDomain other) {
 		// if is bottom just return
-		if (this.table.isEmpty())
+		if (other.table.isEmpty())
 			return this;
 
 		// add (merge) everything in other table to this table
