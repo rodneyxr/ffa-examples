@@ -1,6 +1,4 @@
-$x0 = 'file1';
-touch $x0;
-//touch 'file1';
-//touch 'file2';
-//touch 'file3';
-//touch 'filea';
+touch 'file1';
+touch 'file2';
+touch 'file3';
+touch 'filea';

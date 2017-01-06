@@ -97,7 +97,7 @@ public class FileStructureTest {
 	}
 
 	@Test
-	public void testGetPathToFileInRoot() {
+	public void testGetPathToFileInRoot() throws Exception {
 		FileStructure fs = new FileStructure();
 		fs.createFile(new VariableAutomaton("test"));
 		GraphvizGenerator.saveDOTToFile(fs.files.toDot(), "test/file_in_root.orig.dot");

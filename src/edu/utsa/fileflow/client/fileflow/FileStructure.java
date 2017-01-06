@@ -55,33 +55,32 @@ public class FileStructure implements Cloneable {
 	}
 
 	/**
-	 * Creates a file at the file path provided. Directory must exist for this
-	 * operation to be successful.
+	 * Creates a file at the file path provided. Parent directory must exist for
+	 * this operation to be successful. <code>fp</code> must not represent a
+	 * directory (include a trailing slash).
 	 * 
 	 * @param fp
 	 *            The file path to create the file.
-	 * @return true if the operation was successful
+	 * @throws FileStructureException
+	 *             if the parent directory does not exist
 	 */
-	public boolean createFile(VariableAutomaton fp) {
+	public void createFile(VariableAutomaton fp) throws FileStructureException {
 		Automaton a = makeAbsolute(fp);
+		if (fp.isDirectory())
+			throw new FileStructureException(
+					"touch: cannot touch '" + a.getCommonPrefix() + "': Cannot touch a directory");
 		Automaton parent = getParentDirectory(a);
-		if (directoryExists(parent)) {
-			files = files.union(a);
-		} else {
-			// parent does not exist here
-			// TODO: decide whether to log this or stop execution
-			System.out.println("touch: cannot touch: No such file or directory");
-			return false;
-		}
-		return true;
+		if (!directoryExists(parent))
+			throw new FileStructureException(
+					"touch: cannot touch " + a.getCommonPrefix() + ": No such file or directory");
+		files = files.union(a);
 	}
 
-	public FileStructure createDirectory(Automaton fp) {
+	public void createDirectory(Automaton fp) {
 		Automaton a = fp.concatenate(SEPARATOR);
 		if (!a.equals(fp))
 			fp = a;
 		files = files.union(fp);
-		return this;
 	}
 
 	public boolean directoryExists(String fp) {
@@ -99,8 +98,8 @@ public class FileStructure implements Cloneable {
 
 	/**
 	 * This is a special version of {@link Automaton#makeString}. It creates an
-	 * automaton representation of a file that is compatible with and can be inserted
-	 * into a {@link FileStructure}.
+	 * automaton representation of a file that is compatible with and can be
+	 * inserted into a {@link FileStructure}.
 	 * 
 	 * @param fp
 	 *            The String representation of the file path.

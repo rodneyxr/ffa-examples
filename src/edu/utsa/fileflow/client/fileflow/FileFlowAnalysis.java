@@ -40,7 +40,11 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 		}
 
 		// add the automaton to the
-		domain.post.createFile(va);
+		try {
+			domain.post.createFile(va);
+		} catch (FileStructureException e) {
+			throw new AnalysisException(e.getMessage());
+		}
 
 		return domain;
 	}

@@ -45,7 +45,7 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	}
 
 	public static VariableAutomaton top() {
-		return new VariableAutomaton(Automaton.makeAnyString());
+		return new VariableAutomaton(Automaton.makeChar('/').concatenate(Automaton.makeAnyString()));
 	}
 
 	// Joining two automatons should ensure that there is only one slash between
@@ -80,6 +80,10 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	public boolean startsWith(Automaton a) {
 		Automaton result = variable.intersection(a.concatenate(Automaton.makeAnyString()));
 		return !result.isEmpty();
+	}
+
+	public boolean isDirectory() {
+		return endsWith(Automaton.makeChar('/'));
 	}
 
 	protected Automaton getAutomaton() {
