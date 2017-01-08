@@ -25,26 +25,29 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 	@Override
 	public FileFlowAnalysisDomain touch(FileFlowAnalysisDomain domain, FlowPointContext context)
 			throws AnalysisException {
-		// touch $x0
-		// touch 'file'
-		// touch only accepts one value (ex: `touch $x0` or `touch 'file'`)
-		FunctionCallContext ctx = (FunctionCallContext) context.getContext();
-		ValueContext v = ctx.value(0);
-		VariableAutomaton va;
+		VariableAutomaton va = getValue(domain, context);
 
-		// get the variable from the symbol table or create a new one
-		if (v.Variable() != null) { // if v is a variable
-			va = domain.table.get(v.Variable().getText());
-		} else { // if v is a string literal
-			va = new VariableAutomaton(v.String().getText());
-		}
-
-		// add the automaton to the
+		// add the automaton to the file structure
 		try {
 			domain.post.createFile(va);
 		} catch (FileStructureException e) {
 			throw new AnalysisException(e.getMessage());
 		}
+
+		return domain;
+	}
+
+	@Override
+	public FileFlowAnalysisDomain mkdir(FileFlowAnalysisDomain domain, FlowPointContext context)
+			throws AnalysisException {
+		VariableAutomaton va = getValue(domain, context);
+
+		// add the automaton to the file structure
+		// try {
+		domain.post.createDirectory(va);
+		// } catch (FileStructureException e) {
+		// throw new AnalysisException(e.getMessage());
+		// }
 
 		return domain;
 	}
@@ -165,6 +168,21 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 		}
 
 		return domain;
+	}
+
+	private VariableAutomaton getValue(FileFlowAnalysisDomain domain, FlowPointContext context) {
+		FunctionCallContext ctx = (FunctionCallContext) context.getContext();
+		ValueContext v = ctx.value(0);
+		VariableAutomaton va;
+
+		// get the variable from the symbol table or create a new one
+		if (v.Variable() != null) { // if v is a variable
+			va = domain.table.get(v.Variable().getText());
+		} else { // if v is a string literal
+			va = new VariableAutomaton(v.String().getText());
+		}
+
+		return va;
 	}
 
 }

@@ -4,36 +4,19 @@
 package edu.utsa.fileflow.client.fileflow;
 
 import dk.brics.automaton.Automaton;
+import dk.brics.automaton.FiniteStateTransducer;
 import edu.utsa.fileflow.analysis.Mergeable;
 
 public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 
+	public static final char SEPARATOR = '/';
+	private static final FiniteStateTransducer FST_REMOVE_DOUBLE_SEP = FiniteStateTransducer.removeDoubleSeparator();
+
 	private Automaton variable;
 
 	public VariableAutomaton(String fp) {
-		boolean startsWithSlash = (fp.startsWith("/") || fp.startsWith("\\"));
-		boolean endsWithSlash = (fp.endsWith("/") || fp.endsWith("\\"));
-		StringBuilder sb = new StringBuilder();
-
 		fp = FileStructure.clean(fp);
-		String[] l = fp.split("/");
-
-		// add a single initial slash if fp starts with slash
-		if (startsWithSlash) {
-			variable = Automaton.makeChar('/');
-		} else {
-			variable = Automaton.makeEmpty();
-		}
-
-		// build the automaton
-		for (int i = 0; i < l.length; i++) {
-			sb.append(l[i]);
-			if (i != l.length - 1)
-				sb.append('/');
-			else if (endsWithSlash)
-				sb.append('/');
-			variable = variable.union(Automaton.makeString(sb.toString()));
-		}
+		variable = Automaton.makeString(fp);
 	}
 
 	private VariableAutomaton(Automaton variable) {
@@ -45,20 +28,21 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	}
 
 	public static VariableAutomaton top() {
-		return new VariableAutomaton(Automaton.makeChar('/').concatenate(Automaton.makeAnyString()));
+		return new VariableAutomaton(Automaton.makeChar(SEPARATOR).concatenate(Automaton.makeAnyString()));
 	}
 
-	// Joining two automatons should ensure that there is only one slash between
-	// the join
-	// For example: 'dir1/' concat '/file1' should be 'dir1/file1' instead of
-	// 'dir1//file1'
+	/**
+	 * Joins two automatons to ensure that there is only one slash between the
+	 * join For example: 'dir1/' + '/file1' should be 'dir1/file1' instead of
+	 * 'dir1//file1'
+	 * 
+	 * @param v
+	 *            The {@link VariableAutomaton} to append to this object.
+	 * @return A new {@link VariableAutomaton} object with <code>v</code>
+	 *         concatenated.
+	 */
 	public VariableAutomaton concat(VariableAutomaton v) {
 		Automaton a = variable.concatenate(v.variable);
-		// Automaton a1 = variable;
-		// Automaton a2 = v.variable;
-		// if (endsWith(FileStructure.separator()) &&
-		// v.startsWith(FileStructure.separator()))
-		// a = variable.concatenate(v.variable);
 		return new VariableAutomaton(a);
 	}
 
@@ -83,17 +67,33 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	}
 
 	public boolean isDirectory() {
-		return endsWith(Automaton.makeChar('/'));
-	}
-
-	protected Automaton getAutomaton() {
-		// TODO: make all '/' accept states and remove duplicates
-		return variable;
+		return endsWith(Automaton.makeChar(SEPARATOR));
 	}
 
 	@Override
 	public VariableAutomaton merge(VariableAutomaton other) {
 		return union(other);
+	}
+
+	protected Automaton getAutomaton() {
+		// Remove double separators
+		Automaton a = FST_REMOVE_DOUBLE_SEP.intersection(variable);
+
+		// Make all separators accept states
+		a.getStates().forEach(s -> {
+			s.getTransitions().forEach(t -> {
+				// if transition is a separator
+				if (t.getMin() <= SEPARATOR && t.getMax() >= SEPARATOR) {
+					// make destination state an accept state
+					t.getDest().setAccept(true);
+				}
+			});
+		});
+		return a;
+	}
+
+	public String toDot() {
+		return variable.toDot();
 	}
 
 	@Override

@@ -50,8 +50,8 @@ public class FileStructure implements Cloneable {
 	 *            The file path to be appended to the current working directory.
 	 * @return the absolute file path as an automaton.
 	 */
-	private Automaton makeAbsolute(VariableAutomaton fp) {
-		return cwd.getAutomaton().concatenate(fp.getAutomaton());
+	private VariableAutomaton makeAbsolute(VariableAutomaton fp) {
+		return cwd.concat(fp);
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class FileStructure implements Cloneable {
 	 *             if the parent directory does not exist
 	 */
 	public void createFile(VariableAutomaton fp) throws FileStructureException {
-		Automaton a = makeAbsolute(fp);
+		Automaton a = makeAbsolute(fp).getAutomaton();
 		if (fp.isDirectory())
 			throw new FileStructureException(
 					"touch: cannot touch '" + a.getCommonPrefix() + "': Cannot touch a directory");
@@ -76,11 +76,12 @@ public class FileStructure implements Cloneable {
 		files = files.union(a);
 	}
 
-	public void createDirectory(Automaton fp) {
-		Automaton a = fp.concatenate(SEPARATOR);
-		if (!a.equals(fp))
-			fp = a;
-		files = files.union(fp);
+	public void createDirectory(VariableAutomaton fp) {
+		VariableAutomaton va = fp;
+		if (!fp.endsWith(SEPARATOR))
+			va = fp.concat(new VariableAutomaton("/"));
+		Automaton a = makeAbsolute(va).getAutomaton();
+		files = files.union(a);
 	}
 
 	public boolean directoryExists(String fp) {
@@ -112,6 +113,42 @@ public class FileStructure implements Cloneable {
 	public static Automaton makeDirAutomaton(String fp) {
 		fp = cleanDir(fp);
 		return makeFileAutomaton(fp);
+	}
+
+	/**
+	 * Makes an {@link Automaton} representing a file path. All separators will
+	 * be accept states in the returned automaton.
+	 * 
+	 * @param filepath
+	 *            A string representing the file path.
+	 * @return <code>filepath</code> as an Automaton.
+	 */
+	public static Automaton makeFilepath(String filepath) {
+		Automaton a;
+		boolean startsWithSlash = (filepath.startsWith("/") || filepath.startsWith("\\"));
+		boolean endsWithSlash = (filepath.endsWith("/") || filepath.endsWith("\\"));
+		StringBuilder sb = new StringBuilder();
+
+		filepath = FileStructure.clean(filepath);
+		String[] l = filepath.split("/");
+
+		// add a single initial slash if fp starts with slash
+		if (startsWithSlash) {
+			a = Automaton.makeChar('/');
+		} else {
+			a = Automaton.makeEmpty();
+		}
+
+		// build the automaton
+		for (int i = 0; i < l.length; i++) {
+			sb.append(l[i]);
+			if (i != l.length - 1)
+				sb.append('/');
+			else if (endsWithSlash)
+				sb.append('/');
+			a = a.union(Automaton.makeString(sb.toString()));
+		}
+		return a;
 	}
 
 	/**

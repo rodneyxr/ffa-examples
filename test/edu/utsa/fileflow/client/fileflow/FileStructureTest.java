@@ -32,7 +32,6 @@ public class FileStructureTest {
 
 	@Test
 	public void testRemoveDoubleSepEnd() {
-		// Automaton expected = Automaton.makeString("dir1/file1");
 		Automaton a = Automaton.makeString("a//");
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/rm_double_sep_end.orig.dot");
 		a = FST_REMOVE_SEP.intersection(a);
@@ -53,7 +52,7 @@ public class FileStructureTest {
 	@Test
 	public void testDirectoryExists() {
 		FileStructure fs = new FileStructure();
-		fs.createDirectory(Automaton.makeString("/home"));
+		fs.createDirectory(new VariableAutomaton("/home"));
 		// '/' exists by default since it is root
 		assertTrue("'/' should exist", fs.directoryExists("/"));
 		assertTrue("'/home' should exist", fs.directoryExists("/home"));
@@ -110,7 +109,7 @@ public class FileStructureTest {
 	@Test
 	public void testGetPathToDirectoryInRoot() {
 		FileStructure fs = new FileStructure();
-		fs.createDirectory(Automaton.makeString("/home"));
+		fs.createDirectory(new VariableAutomaton("/home"));
 		GraphvizGenerator.saveDOTToFile(fs.files.toDot(), "test/dir_in_root.orig.dot");
 		Automaton a = FileStructure.getParentDirectory(fs.files);
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/dir_in_root.dot");
