@@ -15,26 +15,33 @@ import edu.utsa.fileflow.testutils.GraphvizGenerator;
 public class FileStructureTest {
 
 	final Automaton VALID_CHARS = new RegExp("[a-zA-Z0-9.-_]{1}").toAutomaton();
-	final FiniteStateTransducer FST_PARENT = FiniteStateTransducer.parentDir();
-	final FiniteStateTransducer FST_REMOVE_SEP = FiniteStateTransducer.removeDoubleSeparator();
+	final FiniteStateTransducer FST_PARENT = Transducers.parentDir();
+	final FiniteStateTransducer FST_REMOVE_DOUBLE_SEP = Transducers.removeDoubleSeparator();
+	final FiniteStateTransducer FST_REMOVE_LAST_SEP = Transducers.removeLastSeparator();
 
 	@Test
 	public void testCreateFSTParent() {
-		FiniteStateTransducer fst = FiniteStateTransducer.parentDir();
-		GraphvizGenerator.saveDOTToFile(fst.toDot(), "test/fst_parent.dot");
+		FiniteStateTransducer fst = Transducers.parentDir();
+		GraphvizGenerator.saveDOTToFile(fst.toDot(), "test/fst/fst_parent.dot");
 	}
 
 	@Test
 	public void testCreateFSTRemoveDoubleSeparator() {
-		FiniteStateTransducer fst = FiniteStateTransducer.removeDoubleSeparator();
-		GraphvizGenerator.saveDOTToFile(fst.toDot(), "test/fst_rm_double_sep.dot");
+		FiniteStateTransducer fst = Transducers.removeDoubleSeparator();
+		GraphvizGenerator.saveDOTToFile(fst.toDot(), "test/fst/fst_rm_double_sep.dot");
+	}
+
+	@Test
+	public void testCreateFSTRemoveLastSeparator() {
+		FiniteStateTransducer fst = Transducers.removeLastSeparator();
+		GraphvizGenerator.saveDOTToFile(fst.toDot(), "test/fst/fst_rm_last_sep.dot");
 	}
 
 	@Test
 	public void testRemoveDoubleSepEnd() {
 		Automaton a = Automaton.makeString("a//");
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/rm_double_sep_end.orig.dot");
-		a = FST_REMOVE_SEP.intersection(a);
+		a = FST_REMOVE_DOUBLE_SEP.intersection(a);
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/rm_double_sep_end.dot");
 	}
 
@@ -45,18 +52,70 @@ public class FileStructureTest {
 		Automaton a2 = Automaton.makeString("/file1");
 		Automaton a = a1.concatenate(a2);
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/rm_double_sep.orig.dot");
-		a = FST_REMOVE_SEP.intersection(a);
+		a = FST_REMOVE_DOUBLE_SEP.intersection(a);
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/rm_double_sep.dot");
 	}
 
 	@Test
-	public void testDirectoryExists() {
+	public void testRemoveLastSeparatorFST() {
+		Automaton a = Automaton.makeString("/a/b/c/");
+		assertTrue(a.run("/a/b/c/"));
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/fst_test/rm_last_sep.orig.dot");
+
+		a = FST_REMOVE_LAST_SEP.intersection(a);
+		assertFalse(a.run("/a/b/c/"));
+		assertTrue(a.run("/a/b/c"));
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/fst_test/rm_last_sep.dot");
+
+		a = Automaton.makeString("/a/b/c");
+		assertTrue(a.run("/a/b/c"));
+		a = FST_REMOVE_LAST_SEP.intersection(a);
+		assertTrue(a.run("/a/b/c"));
+
+		a = Automaton.makeString("/a");
+		assertTrue(a.run("/a"));
+		a = FST_REMOVE_LAST_SEP.intersection(a);
+		assertTrue(a.run("/a"));
+	}
+
+	@Test
+	public void testDirectoryExists() throws FileStructureException {
 		FileStructure fs = new FileStructure();
 		fs.createDirectory(new VariableAutomaton("/home"));
 		// '/' exists by default since it is root
-		assertTrue("'/' should exist", fs.directoryExists("/"));
-		assertTrue("'/home' should exist", fs.directoryExists("/home"));
-		assertFalse("'/fake' should not exist", fs.directoryExists("/fake"));
+		assertTrue("'/' should exist", fs.fileExists(Automaton.makeString("/")));
+		assertTrue("'/home' should exist", fs.fileExists(Automaton.makeString("/home")));
+		assertFalse("'/fake' should not exist", fs.fileExists(Automaton.makeString("/fake")));
+	}
+
+	@Test
+	public void testFileExists() throws FileStructureException {
+		FileStructure fs = new FileStructure();
+		fs.createDirectory(new VariableAutomaton("/home"));
+		fs.createFile(new VariableAutomaton("/home/file"));
+
+		// '/' exists by default since it is root
+		assertTrue("'/' should exist", fs.fileExists(Automaton.makeString("/")));
+		assertTrue("'/home' should exist", fs.fileExists(Automaton.makeString("/home")));
+		assertTrue("'/home/file' should exist", fs.fileExists(Automaton.makeString("/home/file")));
+		assertFalse("'/fake' should not exist", fs.fileExists(Automaton.makeString("/fake")));
+	}
+
+	@Test(expected = FileStructureException.class)
+	public void testCreateFileWhenFileAlreadyExists() throws FileStructureException {
+		FileStructure fs = new FileStructure();
+
+		// create and assert '/dir1/'
+		fs.createDirectory(new VariableAutomaton("/dir1"));
+		assertTrue(fs.fileExists(Automaton.makeString("/dir1")));
+
+		// create and assert '/dir1/file1
+		fs.createFile(new VariableAutomaton("/dir1/file1"));
+		assertTrue(fs.fileExists(Automaton.makeString("/dir1/file1")));
+
+		// attempt to create directory at existing file '/dir1/file1' (should
+		// fail)
+		fs.createDirectory(new VariableAutomaton("/dir1/file1"));
 	}
 
 	@Test
@@ -107,7 +166,7 @@ public class FileStructureTest {
 	}
 
 	@Test
-	public void testGetPathToDirectoryInRoot() {
+	public void testGetPathToDirectoryInRoot() throws FileStructureException {
 		FileStructure fs = new FileStructure();
 		fs.createDirectory(new VariableAutomaton("/home"));
 		GraphvizGenerator.saveDOTToFile(fs.files.toDot(), "test/dir_in_root.orig.dot");

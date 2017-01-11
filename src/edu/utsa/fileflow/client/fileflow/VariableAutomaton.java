@@ -10,7 +10,7 @@ import edu.utsa.fileflow.analysis.Mergeable;
 public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 
 	public static final char SEPARATOR = '/';
-	private static final FiniteStateTransducer FST_REMOVE_DOUBLE_SEP = FiniteStateTransducer.removeDoubleSeparator();
+	private static final FiniteStateTransducer FST_REMOVE_DOUBLE_SEP = Transducers.removeDoubleSeparator();
 
 	private Automaton variable;
 
@@ -75,9 +75,24 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 		return union(other);
 	}
 
+	/**
+	 * Removes double separators from the automaton.
+	 * 
+	 * @return the automaton with no double separators.
+	 */
+	public Automaton clean() {
+		variable = FST_REMOVE_DOUBLE_SEP.intersection(variable);
+		return variable;
+	}
+
+	/**
+	 * Cleans and sets all separators to accept states.
+	 * 
+	 * @return the automaton with all separators as accept states.
+	 */
 	protected Automaton getAutomaton() {
 		// Remove double separators
-		Automaton a = FST_REMOVE_DOUBLE_SEP.intersection(variable);
+		Automaton a = clean();
 
 		// Make all separators accept states
 		a.getStates().forEach(s -> {

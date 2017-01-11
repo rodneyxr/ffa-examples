@@ -43,11 +43,11 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 		VariableAutomaton va = getValue(domain, context);
 
 		// add the automaton to the file structure
-		// try {
-		domain.post.createDirectory(va);
-		// } catch (FileStructureException e) {
-		// throw new AnalysisException(e.getMessage());
-		// }
+		try {
+			domain.post.createDirectory(va);
+		} catch (FileStructureException e) {
+			throw new AnalysisException(e.getMessage());
+		}
 
 		return domain;
 	}

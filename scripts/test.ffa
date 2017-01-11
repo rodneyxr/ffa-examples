@@ -1,4 +1,5 @@
-touch 'file1';
-touch 'file2';
-touch 'file3';
-touch 'filea';
+touch 'a';
+
+if (other) {
+	touch 'b';
+}

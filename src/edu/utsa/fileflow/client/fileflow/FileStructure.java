@@ -17,7 +17,8 @@ public class FileStructure implements Cloneable {
 	}
 
 	private static final Automaton SEPARATOR = Automaton.makeChar('/');
-	private static final FiniteStateTransducer FST_PARENT = FiniteStateTransducer.parentDir();
+	private static final FiniteStateTransducer FST_PARENT = Transducers.parentDir();
+	private static final FiniteStateTransducer FST_REMOVE_LAST_SEPARATOR = Transducers.removeLastSeparator();
 
 	private VariableAutomaton cwd = new VariableAutomaton("/");
 	Automaton files;
@@ -70,31 +71,61 @@ public class FileStructure implements Cloneable {
 			throw new FileStructureException(
 					"touch: cannot touch '" + a.getCommonPrefix() + "': Cannot touch a directory");
 		Automaton parent = getParentDirectory(a);
-		if (!directoryExists(parent))
+		if (!fileExists(parent))
 			throw new FileStructureException(
 					"touch: cannot touch " + a.getCommonPrefix() + ": No such file or directory");
 		files = files.union(a);
 	}
 
-	public void createDirectory(VariableAutomaton fp) {
+	/**
+	 * Creates a directory in the file structure at the path provided. If the
+	 * path to that directory does not exist, it will be created.
+	 * 
+	 * @param fp
+	 *            The file path to the directory to be created.
+	 * @throws FileStructureException
+	 *             if a file already exists at <code>fp</code>.
+	 */
+	public void createDirectory(VariableAutomaton fp) throws FileStructureException {
 		VariableAutomaton va = fp;
 		if (!fp.endsWith(SEPARATOR))
 			va = fp.concat(new VariableAutomaton("/"));
-		Automaton a = makeAbsolute(va).getAutomaton();
-		files = files.union(a);
+		Automaton a = makeAbsolute(va).clean();
+		if (fileExists(a)) {
+			throw new FileStructureException(
+					String.format("mkdir: cannot create directory '%s': File exists", a.getCommonPrefix()));
+		}
+		files = files.union(makeAbsolute(va).getAutomaton());
 	}
 
-	public boolean directoryExists(String fp) {
-		fp = cleanDir(fp);
-		return files.run(fp);
-	}
+	/**
+	 * Determines whether a file exists. It does not matter if it is a directory
+	 * or regular file or possibly both.
+	 * 
+	 * @param fp
+	 *            The file path of the file to check if it exists.
+	 * @return true if the file exists; false otherwise.
+	 */
+	public boolean fileExists(Automaton fp) {
+		// try as a regular file
+		fp = FST_REMOVE_LAST_SEPARATOR.intersection(fp);
+		if (fp.subsetOf(files))
+			return true;
 
-	public boolean directoryExists(Automaton fp) {
+		// try as a directory
+		fp = fp.concatenate(SEPARATOR);
 		return fp.subsetOf(files);
 	}
 
-	public static Automaton getParentDirectory(Automaton a) {
-		return FST_PARENT.intersection(a);
+	/**
+	 * Get the parent directory of the file path passed in.
+	 * 
+	 * @param fp
+	 *            The child's file path.
+	 * @return The parent directory of <code>fp</code>.
+	 */
+	public static Automaton getParentDirectory(Automaton fp) {
+		return FST_PARENT.intersection(fp);
 	}
 
 	/**
