@@ -75,25 +75,21 @@ public class Transducers extends FiniteStateTransducer {
 		TransducerState s0 = new TransducerState();
 		TransducerState s1 = new TransducerState();
 		TransducerState s2 = new TransducerState();
-		TransducerState s3 = new TransducerState();
 
 		// s0 -> s0: accept anything
 		s0.addIdenticalAcceptAllTransition(s0);
 
-		// s0 -> s1: '/' => identical
-		s0.addTransition(new TransducerTransition('/', '/', s1));
+		// s0 -> s1: accept anything minus '/' => identical
+		s0.addIdenticalExcludeTransition('/', s1);
 
-		// s1 -> s2: accept anything minus '/' => identical
-		s1.addIdenticalExcludeTransition('/', s2);
+		// s1 -> s1: accept anything minus '/' => identical
+		s1.addIdenticalExcludeTransition('/', s1);
 
-		// s2 -> s2: accept anything minus '/' => identical
-		s2.addIdenticalExcludeTransition('/', s2);
+		// s1 -> s2: '/' => epsilon
+		s1.addTransition(TransducerTransition.createEpsilonTransition('/', '/', s2));
 
-		// s2 -> s3: '/' => epsilon
-		s2.addTransition(TransducerTransition.createEpsilonTransition('/', '/', s3));
-
+		s1.setAccept(true);
 		s2.setAccept(true);
-		s3.setAccept(true);
 		fst.setInitialState(s0);
 		return fst;
 	}
