@@ -3,6 +3,7 @@ package edu.utsa.fileflow.client.fileflow;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import dk.brics.automaton.Automaton;
@@ -13,6 +14,12 @@ import dk.brics.automaton.Transition;
 import edu.utsa.fileflow.testutils.GraphvizGenerator;
 
 public class FileStructureTest {
+
+	@Before
+	public void setUp() throws Exception {
+		Automaton.setMinimization(Automaton.MINIMIZE_BRZOZOWSKI);
+		Automaton.setMinimizeAlways(true);
+	}
 
 	final Automaton VALID_CHARS = new RegExp("[a-zA-Z0-9.-_]{1}").toAutomaton();
 	final FiniteStateTransducer FST_PARENT = Transducers.parentDir();
@@ -83,9 +90,9 @@ public class FileStructureTest {
 		FileStructure fs = new FileStructure();
 		fs.createDirectory(new VariableAutomaton("/home"));
 		// '/' exists by default since it is root
-		assertTrue("'/' should exist", fs.fileExists(Automaton.makeString("/")));
-		assertTrue("'/home' should exist", fs.fileExists(Automaton.makeString("/home")));
-		assertFalse("'/fake' should not exist", fs.fileExists(Automaton.makeString("/fake")));
+		assertTrue("'/' should exist", fs.fileExists(new VariableAutomaton("/")));
+		assertTrue("'/home' should exist", fs.fileExists(new VariableAutomaton("/home")));
+		assertFalse("'/fake' should not exist", fs.fileExists(new VariableAutomaton("/fake")));
 	}
 
 	@Test
@@ -95,42 +102,54 @@ public class FileStructureTest {
 		fs.createFile(new VariableAutomaton("/home/file"));
 
 		// '/' exists by default since it is root
-		assertTrue("'/' should exist", fs.fileExists(Automaton.makeString("/")));
-		assertTrue("'/home' should exist", fs.fileExists(Automaton.makeString("/home")));
-		assertTrue("'/home/file' should exist", fs.fileExists(Automaton.makeString("/home/file")));
-		assertFalse("'/fake' should not exist", fs.fileExists(Automaton.makeString("/fake")));
+		assertTrue("'/' should exist", fs.fileExists(new VariableAutomaton("/")));
+		assertTrue("'/home' should exist", fs.fileExists(new VariableAutomaton("/home")));
+		assertTrue("'/home/file' should exist", fs.fileExists(new VariableAutomaton("/home/file")));
+		assertFalse("'/fake' should not exist", fs.fileExists(new VariableAutomaton("/fake")));
+	}
+
+	@Test
+	public void testSubsetOf() {
+		Automaton a = Automaton.makeString("/");
+		a = a.union(Automaton.makeString("/dir1/"));
+		a = a.union(Automaton.makeString("/dir1/file1"));
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "tmp/subset.dot");
+		assertTrue(Automaton.makeString("/dir1/file1").subsetOf(a));
 	}
 
 	@Test(expected = FileStructureException.class)
-	public void testCreateFileWhenFileAlreadyExists() throws FileStructureException {
+	public void testCreateFileWhenDirectoryAlreadyExists() throws FileStructureException {
 		FileStructure fs = new FileStructure();
 
-		// create and assert '/dir1/'
-		fs.createDirectory(new VariableAutomaton("/dir1"));
-		assertTrue(fs.fileExists(Automaton.makeString("/dir1")));
+		// create and assert '/a/'
+		fs.createDirectory(new VariableAutomaton("/a/"));
+		assertTrue(fs.fileExists(new VariableAutomaton("/a/")));
 
-		// create and assert '/dir1/file1
-		fs.createFile(new VariableAutomaton("/dir1/file1"));
-		assertTrue(fs.fileExists(Automaton.makeString("/dir1/file1")));
+		// attempt to create file at existing directory '/a' (should fail)
+		fs.createFile(new VariableAutomaton("/a"));
+	}
 
-		// attempt to create directory at existing file '/dir1/file1' (should
-		// fail)
-		fs.createDirectory(new VariableAutomaton("/dir1/file1"));
+	@Test(expected = FileStructureException.class)
+	public void testCreateDirectoryWhenFileAlreadyExists() throws FileStructureException {
+		FileStructure fs = new FileStructure();
+
+		// create and assert '/a'
+		fs.createFile(new VariableAutomaton("/a"));
+		assertTrue(fs.fileExists(new VariableAutomaton("/a")));
+
+		// attempt to create directory at existing file '/a' (should fail)
+		fs.createDirectory(new VariableAutomaton("/a/"));
 	}
 
 	@Test
 	public void testGetPathToFileComplex() {
-		Automaton a = Automaton.makeChar('/');
-		RegExp reg = new RegExp("/dir[1-9]*/q");
-		RegExp r2 = new RegExp("/dir[1-9]*/");
-		a = a.union(Automaton.makeString("/dir1/q"));
-		a = a.union(Automaton.makeString("/df"));
-		a = a.union(reg.toAutomaton());
-		a = a.union(r2.toAutomaton());
+		RegExp reg = new RegExp("(/dir[1-9]*/q)|(/df)");
+		VariableAutomaton va = new VariableAutomaton(reg.toAutomaton());
+		Automaton a = va.getSeparatedAutomaton();
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/complex.orig.dot");
 		assertTrue(a.run("/df"));
 
-		a = FileStructure.getParentDirectory(a);
+		a = va.getParentDirectory().getSeparatedAutomaton();
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/complex.dot");
 		assertTrue(a.run("/dir1/"));
 		assertTrue(a.run("/dir4/"));
@@ -140,15 +159,13 @@ public class FileStructureTest {
 
 	@Test
 	public void testGetPathToFileSingleton() {
-		Automaton pathToFile = Automaton.makeString("/dir1/");
-		Automaton a = Automaton.makeChar('/');
-		a = a.union(pathToFile);
-		a = a.union(Automaton.makeString("/dir1/file1"));
+		VariableAutomaton va = new VariableAutomaton("/dir1/file1");
+		Automaton a = va.getSeparatedAutomaton();
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/singleton.va.orig.dot");
 		assertTrue(a.run("/dir1/file1"));
 		assertFalse(a.run("/dir1/file1/"));
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/singleton.orig.dot");
 
-		a = FileStructure.getParentDirectory(a);
+		a = va.getParentDirectory().getSeparatedAutomaton();
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/singleton.dot");
 		assertTrue(a.run("/dir1/"));
 		assertFalse(a.run("/dir1/file1"));
@@ -156,22 +173,28 @@ public class FileStructureTest {
 
 	@Test
 	public void testGetPathToFileInRoot() throws Exception {
-		FileStructure fs = new FileStructure();
-		fs.createFile(new VariableAutomaton("test"));
-		GraphvizGenerator.saveDOTToFile(fs.files.toDot(), "test/file_in_root.orig.dot");
-		// TODO: create assertions
+		VariableAutomaton va = new VariableAutomaton("/test");
+		Automaton a = va.getSeparatedAutomaton();
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/file_in_root.orig.dot");
+		assertTrue(a.run("/test"));
 
-		Automaton a = FileStructure.getParentDirectory(fs.files);
+		a = va.getParentDirectory().getSeparatedAutomaton();
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/file_in_root.dot");
+		assertTrue(a.run("/"));
+		assertFalse(a.run("/test"));
 	}
 
 	@Test
 	public void testGetPathToDirectoryInRoot() throws FileStructureException {
-		FileStructure fs = new FileStructure();
-		fs.createDirectory(new VariableAutomaton("/home"));
-		GraphvizGenerator.saveDOTToFile(fs.files.toDot(), "test/dir_in_root.orig.dot");
-		Automaton a = FileStructure.getParentDirectory(fs.files);
+		VariableAutomaton va = new VariableAutomaton("/home/");
+		Automaton a = va.getSeparatedAutomaton();
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/dir_in_root.orig.dot");
+		assertTrue(a.run("/home/"));
+
+		a = va.getParentDirectory().getSeparatedAutomaton();
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/dir_in_root.dot");
+		assertTrue(a.run("/"));
+		assertFalse(a.run("/home/"));
 	}
 
 	@Test
@@ -179,28 +202,6 @@ public class FileStructureTest {
 		Automaton a = Automaton.makeChar('/');
 		State s0 = a.getInitialState().getTransitions().toArray(new Transition[1])[0].getDest();
 		assertTrue(s0.getTransitions().isEmpty());
-	}
-
-	@Test
-	public void testMakeFileAutomaton() {
-		String fpText = "file1";
-		Automaton fp = FileStructure.makeFileAutomaton(fpText);
-		GraphvizGenerator.saveDOTToFile(fp.toDot(), "test/make_file.dot");
-		assertTrue(fp.run("/"));
-		assertFalse(fp.run("//"));
-		assertTrue(fp.run("/file1"));
-	}
-
-	@Test
-	public void testMakeDirAutomaton() {
-		String fpText = "dir";
-		Automaton fp = FileStructure.makeDirAutomaton(fpText);
-		GraphvizGenerator.saveDOTToFile(fp.toDot(), "test/make_dir.dot");
-		assertTrue(fp.run("/"));
-		assertFalse(fp.run("//"));
-
-		assertTrue(fp.run("/dir/"));
-		assertFalse(fp.run("/dir"));
 	}
 
 }

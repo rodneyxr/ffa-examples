@@ -10,17 +10,22 @@ import edu.utsa.fileflow.analysis.Mergeable;
 public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 
 	public static final char SEPARATOR = '/';
+	private static final FiniteStateTransducer FST_PARENT = Transducers.parentDir();
 	private static final FiniteStateTransducer FST_REMOVE_DOUBLE_SEP = Transducers.removeDoubleSeparator();
+	private static final FiniteStateTransducer FST_REMOVE_LAST_SEPARATOR = Transducers.removeLastSeparator();
 
 	private Automaton variable;
 
 	public VariableAutomaton(String fp) {
-		fp = FileStructure.clean(fp);
-		variable = Automaton.makeString(fp);
+		this(Automaton.makeString(FileStructure.clean(fp)));
 	}
 
-	private VariableAutomaton(Automaton variable) {
-		this.variable = variable;
+	protected VariableAutomaton(Automaton variable) {
+		// remove double separators if not bottom
+		if (variable.isEmpty())
+			this.variable = variable;
+		else
+			this.variable = FST_REMOVE_DOUBLE_SEP.intersection(variable);
 	}
 
 	public static VariableAutomaton bottom() {
@@ -41,7 +46,7 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	 * @return A new {@link VariableAutomaton} object with <code>v</code>
 	 *         concatenated.
 	 */
-	public VariableAutomaton concat(VariableAutomaton v) {
+	public VariableAutomaton concatenate(VariableAutomaton v) {
 		Automaton a = variable.concatenate(v.variable);
 		return new VariableAutomaton(a);
 	}
@@ -51,7 +56,7 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 		return new VariableAutomaton(a);
 	}
 
-	public VariableAutomaton intersect(VariableAutomaton v) {
+	public VariableAutomaton intersection(VariableAutomaton v) {
 		Automaton a = variable.intersection(v.variable);
 		return new VariableAutomaton(a);
 	}
@@ -65,34 +70,52 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 		Automaton result = variable.intersection(a.concatenate(Automaton.makeAnyString()));
 		return !result.isEmpty();
 	}
+	
+	public boolean subsetOf(Automaton a) {
+		return variable.subsetOf(a);
+	}
 
+	/**
+	 * @return true if the automaton ends with a separator; false otherwise
+	 */
 	public boolean isDirectory() {
 		return endsWith(Automaton.makeChar(SEPARATOR));
 	}
 
-	@Override
-	public VariableAutomaton merge(VariableAutomaton other) {
-		return union(other);
-	}
-
 	/**
-	 * Removes double separators from the automaton.
-	 * 
-	 * @return the automaton with no double separators.
+	 * @return the parent directory of this automaton.
 	 */
-	public Automaton clean() {
-		variable = FST_REMOVE_DOUBLE_SEP.intersection(variable);
-		return variable;
+	public VariableAutomaton getParentDirectory() {
+		return new VariableAutomaton(FST_PARENT.intersection(variable));
 	}
 
 	/**
-	 * Cleans and sets all separators to accept states.
+	 * 
+	 * @return a clone of this automaton without the last separator if one
+	 *         exists.
+	 */
+	public VariableAutomaton removeLastSeparator() {
+		return new VariableAutomaton(FST_REMOVE_LAST_SEPARATOR.intersection(variable));
+	}
+
+	public String toDot() {
+		return variable.toDot();
+	}
+
+	/**
+	 * @return the automaton without separators as accept states.
+	 */
+	protected Automaton getAutomaton() {
+		return variable.clone();
+	}
+
+	/**
+	 * Sets all separators to accept states.
 	 * 
 	 * @return the automaton with all separators as accept states.
 	 */
-	protected Automaton getAutomaton() {
-		// Remove double separators
-		Automaton a = clean();
+	protected Automaton getSeparatedAutomaton() {
+		Automaton a = variable.clone();
 
 		// Make all separators accept states
 		a.getStates().forEach(s -> {
@@ -107,8 +130,9 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 		return a;
 	}
 
-	public String toDot() {
-		return variable.toDot();
+	@Override
+	public VariableAutomaton merge(VariableAutomaton other) {
+		return union(other);
 	}
 
 	@Override

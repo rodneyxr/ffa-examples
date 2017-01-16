@@ -7,7 +7,6 @@
 package edu.utsa.fileflow.client.fileflow;
 
 import dk.brics.automaton.Automaton;
-import dk.brics.automaton.FiniteStateTransducer;
 
 public class FileStructure implements Cloneable {
 
@@ -17,8 +16,6 @@ public class FileStructure implements Cloneable {
 	}
 
 	private static final Automaton SEPARATOR = Automaton.makeChar('/');
-	private static final FiniteStateTransducer FST_PARENT = Transducers.parentDir();
-	private static final FiniteStateTransducer FST_REMOVE_LAST_SEPARATOR = Transducers.removeLastSeparator();
 
 	private VariableAutomaton cwd = new VariableAutomaton("/");
 	Automaton files;
@@ -27,14 +24,14 @@ public class FileStructure implements Cloneable {
 		this.files = SEPARATOR.clone();
 	}
 
+	private FileStructure(Automaton files) {
+		this.files = files;
+	}
+
 	public static FileStructure top() {
 		Automaton files = SEPARATOR.clone();
 		files.concatenate(Automaton.makeAnyString());
 		return new FileStructure(files);
-	}
-
-	private FileStructure(Automaton files) {
-		this.files = files;
 	}
 
 	/**
@@ -42,144 +39,6 @@ public class FileStructure implements Cloneable {
 	 */
 	public static Automaton separator() {
 		return SEPARATOR.clone();
-	}
-
-	/**
-	 * Prepends the current working directory to the file path variable given.
-	 * 
-	 * @param fp
-	 *            The file path to be appended to the current working directory.
-	 * @return the absolute file path as an automaton.
-	 */
-	private VariableAutomaton makeAbsolute(VariableAutomaton fp) {
-		return cwd.concat(fp);
-	}
-
-	/**
-	 * Creates a file at the file path provided. Parent directory must exist for
-	 * this operation to be successful. <code>fp</code> must not represent a
-	 * directory (include a trailing slash).
-	 * 
-	 * @param fp
-	 *            The file path to create the file.
-	 * @throws FileStructureException
-	 *             if the parent directory does not exist
-	 */
-	public void createFile(VariableAutomaton fp) throws FileStructureException {
-		Automaton a = makeAbsolute(fp).getAutomaton();
-		if (fp.isDirectory())
-			throw new FileStructureException(
-					"touch: cannot touch '" + a.getCommonPrefix() + "': Cannot touch a directory");
-		Automaton parent = getParentDirectory(a);
-		if (!fileExists(parent))
-			throw new FileStructureException(
-					"touch: cannot touch " + a.getCommonPrefix() + ": No such file or directory");
-		files = files.union(a);
-	}
-
-	/**
-	 * Creates a directory in the file structure at the path provided. If the
-	 * path to that directory does not exist, it will be created.
-	 * 
-	 * @param fp
-	 *            The file path to the directory to be created.
-	 * @throws FileStructureException
-	 *             if a file already exists at <code>fp</code>.
-	 */
-	public void createDirectory(VariableAutomaton fp) throws FileStructureException {
-		VariableAutomaton va = fp;
-		if (!fp.endsWith(SEPARATOR))
-			va = fp.concat(new VariableAutomaton("/"));
-		Automaton a = makeAbsolute(va).clean();
-		if (fileExists(a)) {
-			throw new FileStructureException(
-					String.format("mkdir: cannot create directory '%s': File exists", a.getCommonPrefix()));
-		}
-		files = files.union(makeAbsolute(va).getAutomaton());
-	}
-
-	/**
-	 * Determines whether a file exists. It does not matter if it is a directory
-	 * or regular file or possibly both.
-	 * 
-	 * @param fp
-	 *            The file path of the file to check if it exists.
-	 * @return true if the file exists; false otherwise.
-	 */
-	public boolean fileExists(Automaton fp) {
-		// try as a regular file
-		fp = FST_REMOVE_LAST_SEPARATOR.intersection(fp);
-		if (fp.subsetOf(files))
-			return true;
-
-		// try as a directory
-		fp = fp.concatenate(SEPARATOR);
-		return fp.subsetOf(files);
-	}
-
-	/**
-	 * Get the parent directory of the file path passed in.
-	 * 
-	 * @param fp
-	 *            The child's file path.
-	 * @return The parent directory of <code>fp</code>.
-	 */
-	public static Automaton getParentDirectory(Automaton fp) {
-		return FST_PARENT.intersection(fp);
-	}
-
-	/**
-	 * This is a special version of {@link Automaton#makeString}. It creates an
-	 * automaton representation of a file that is compatible with and can be
-	 * inserted into a {@link FileStructure}.
-	 * 
-	 * @param fp
-	 *            The String representation of the file path.
-	 * @return an automaton representation of <code>fp</code>.
-	 */
-	public static Automaton makeFileAutomaton(String fp) {
-		return new VariableAutomaton("/" + fp).getAutomaton();
-	}
-
-	public static Automaton makeDirAutomaton(String fp) {
-		fp = cleanDir(fp);
-		return makeFileAutomaton(fp);
-	}
-
-	/**
-	 * Makes an {@link Automaton} representing a file path. All separators will
-	 * be accept states in the returned automaton.
-	 * 
-	 * @param filepath
-	 *            A string representing the file path.
-	 * @return <code>filepath</code> as an Automaton.
-	 */
-	public static Automaton makeFilepath(String filepath) {
-		Automaton a;
-		boolean startsWithSlash = (filepath.startsWith("/") || filepath.startsWith("\\"));
-		boolean endsWithSlash = (filepath.endsWith("/") || filepath.endsWith("\\"));
-		StringBuilder sb = new StringBuilder();
-
-		filepath = FileStructure.clean(filepath);
-		String[] l = filepath.split("/");
-
-		// add a single initial slash if fp starts with slash
-		if (startsWithSlash) {
-			a = Automaton.makeChar('/');
-		} else {
-			a = Automaton.makeEmpty();
-		}
-
-		// build the automaton
-		for (int i = 0; i < l.length; i++) {
-			sb.append(l[i]);
-			if (i != l.length - 1)
-				sb.append('/');
-			else if (endsWithSlash)
-				sb.append('/');
-			a = a.union(Automaton.makeString(sb.toString()));
-		}
-		return a;
 	}
 
 	/**
@@ -196,17 +55,107 @@ public class FileStructure implements Cloneable {
 	}
 
 	/**
-	 * Cleans a file path and appends a SLASH if fp does not end with one.
+	 * Creates a file at the file path provided. Parent directory must exist for
+	 * this operation to be successful. <code>fp</code> must not represent a
+	 * directory (include a trailing slash).
 	 * 
 	 * @param fp
-	 *            The file path to clean.
-	 * @return a new String with the cleaned directory file path.
+	 *            The file path to create the file.
+	 * @throws FileStructureException
+	 *             if the parent directory does not exist
 	 */
-	public static String cleanDir(String fp) {
-		clean(fp);
-		if (!fp.endsWith("/"))
-			fp = fp.concat("/");
-		return fp;
+	public void createFile(VariableAutomaton fp) throws FileStructureException {
+		if (fp.isDirectory())
+			throw new FileStructureException(String.format("touch: cannot touch '%s': Cannot touch a directory",
+					fp.getAutomaton().getCommonPrefix()));
+
+		// if the parent directory does not exist throw an exception
+		if (!fileExists(fp.getParentDirectory()))
+			throw new FileStructureException(String.format("touch: cannot touch '%s': No such file or directory",
+					fp.getAutomaton().getCommonPrefix()));
+
+		// if the file already exists, throw an exception
+		if (fileExists(fp))
+			throw new FileStructureException(String.format("touch: cannot touch '%s': File already exists",
+					fp.getAutomaton().getCommonPrefix()));
+
+		union(fp);
+	}
+
+	/**
+	 * Creates a directory in the file structure at the path provided. If the
+	 * path to that directory does not exist, it will be created.
+	 * 
+	 * @param fp
+	 *            The file path to the directory to be created.
+	 * @throws FileStructureException
+	 *             if a file already exists at <code>fp</code>.
+	 */
+	public void createDirectory(VariableAutomaton fp) throws FileStructureException {
+		// if fp does not have a trailing separator, then add one
+		if (!fp.endsWith(SEPARATOR))
+			fp = fp.concatenate(new VariableAutomaton("/"));
+
+		VariableAutomaton a = new VariableAutomaton(absolute(fp));
+		if (fileExists(a))
+			throw new FileStructureException(String.format("mkdir: cannot create directory '%s': File exists",
+					a.getAutomaton().getCommonPrefix()));
+
+		union(fp);
+	}
+
+	/**
+	 * Determines whether a file exists. It does not matter if it is a directory
+	 * or regular file or possibly both.
+	 * 
+	 * @param fp
+	 *            The file path of the file to check if it exists.
+	 * @return true if the file exists; false otherwise.
+	 */
+	public boolean fileExists(VariableAutomaton fp) {
+		VariableAutomaton a = new VariableAutomaton(absolute(fp));
+		// try as a regular file
+		a = a.removeLastSeparator();
+		if (a.subsetOf(files))
+			return true;
+
+		// try as a directory
+		a = a.concatenate(new VariableAutomaton(SEPARATOR));
+		return a.subsetOf(files);
+	}
+
+	/**
+	 * Graphviz DOT representation of this file structure.
+	 * 
+	 * @return a Graphviz DOT representation of the files automaton.
+	 */
+	public String toDot() {
+		return files.toDot();
+	}
+
+	/**
+	 * Prepends the current working directory to the file path variable given.
+	 * 
+	 * @param fp
+	 *            The file path to be appended to the current working directory.
+	 * @return the absolute file path as an automaton.
+	 */
+	private Automaton absolute(VariableAutomaton fp) {
+		if (fp.startsWith(cwd.getAutomaton())) {
+			return fp.getAutomaton();
+		}
+		return cwd.concatenate(fp).getAutomaton();
+	}
+
+	/**
+	 * Performs a union operation on <code>files</code>. <code>fp</code> is
+	 * converted to an absolute path before the union.
+	 * 
+	 * @param fp
+	 *            The variable automaton to union with <code>files</code>.
+	 */
+	private void union(VariableAutomaton fp) {
+		files = files.union(absolute(fp));
 	}
 
 	@Override
@@ -219,17 +168,8 @@ public class FileStructure implements Cloneable {
 		return true;
 	}
 
-	/**
-	 * Graphviz DOT representation of this file structure.
-	 * 
-	 * @return a Graphviz DOT representation of the files automaton.
-	 */
-	public String toDot() {
-		return files.toDot();
-	}
-
 	@Override
-	protected FileStructure clone() {
+	public FileStructure clone() {
 		FileStructure clone = new FileStructure();
 		clone.files = files.clone();
 		return clone;

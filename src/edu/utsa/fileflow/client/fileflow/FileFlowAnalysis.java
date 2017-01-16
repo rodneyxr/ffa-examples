@@ -96,11 +96,10 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 		if (emptyArray != null) {
 			t1 = VariableAutomaton.bottom();
 			VariableAutomaton old = domain.table.get(key);
-			if (old != null) {
-				// domain.table.put(key, t1.concat(old)) // t1.concat(old)
-			} else {
+			if (old != null)
+				domain.table.put(key, t1.concatenate(old));
+			else
 				domain.table.put(key, t1);
-			}
 			return domain;
 		}
 
@@ -120,12 +119,11 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 			String term1Text = term1.getText();
 			if (val.Index() != null)
 				term1Text += val.Index().getText();
+
 			t1 = domain.table.get(term1Text);
-			if (t1 == null) {
-				// TODO: throw exception
-				System.err.println("Analysis Error: variable '" + term1Text + "' not defined");
-				System.exit(1);
-			}
+			if (t1 == null)
+				throw new AnalysisException("variable '" + term1Text + "' not defined");
+
 		} else {
 			// term1 is a string
 			term1 = val.String();
@@ -136,34 +134,35 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 		if (expr.value().size() == 2) {
 			val = expr.value(1);
 			TerminalNode term2 = val.Variable();
+
 			if (term2 != null) {
 				// term2 is a variable
 				String term2Text = term2.getText();
 				if (val.Index() != null)
 					term2Text += val.Index().getText();
+
 				t2 = domain.table.get(term2Text);
-				if (t2 == null) {
-					// TODO: throw exception
-					System.err.println("Analysis Error: variable '" + term2Text + "' not defined");
-					System.exit(1);
-				}
+				if (t2 == null)
+					throw new AnalysisException("variable '" + term2Text + "' not defined");
+
 			} else {
 				// term2 is a string
 				term2 = val.String();
-				// TODO: concat before making automaton?
 				t2 = new VariableAutomaton(term2.getText());
 			}
 
-			VariableAutomaton old = domain.table.get(key);
-			if (old != null && isArray) {
-				// merge -> union
-				domain.table.put(key, t1.concat(t2).union(old));
-			} else
-				domain.table.put(key, t1.concat(t2));
-		} else {
+			// concatenate t1 and t2
 			VariableAutomaton old = domain.table.get(key);
 			if (old != null && isArray)
-				t1.union(old); // merge -> union
+				domain.table.put(key, t1.concatenate(t2).merge(old));
+			else
+				domain.table.put(key, t1.concatenate(t2));
+
+		} else {
+			// there is no concatenation, so just add t1 to symbol table
+			VariableAutomaton old = domain.table.get(key);
+			if (old != null && isArray)
+				t1.merge(old);
 			domain.table.put(key, t1);
 		}
 
@@ -173,16 +172,13 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 	private VariableAutomaton getValue(FileFlowAnalysisDomain domain, FlowPointContext context) {
 		FunctionCallContext ctx = (FunctionCallContext) context.getContext();
 		ValueContext v = ctx.value(0);
-		VariableAutomaton va;
 
 		// get the variable from the symbol table or create a new one
-		if (v.Variable() != null) { // if v is a variable
-			va = domain.table.get(v.Variable().getText());
-		} else { // if v is a string literal
-			va = new VariableAutomaton(v.String().getText());
-		}
+		if (v.Variable() != null) // if v is a variable
+			return domain.table.get(v.Variable().getText());
 
-		return va;
+		// v is a string literal
+		return new VariableAutomaton(v.String().getText());
 	}
 
 }

@@ -25,7 +25,7 @@ public class VariableAutomatonTest {
 //		v = v.concatenate(x2);
 		VariableAutomaton v1 = new VariableAutomaton("/dir1/");
 		VariableAutomaton v2 = new VariableAutomaton("/file1");
-		VariableAutomaton v = v1.concat(v2);
+		VariableAutomaton v = v1.concatenate(v2);
 		GraphvizGenerator.saveDOTToFile(v.getAutomaton().toDot(), "test/concat_var_auto.dot");
 	}
 
