@@ -113,15 +113,15 @@ public class FileStructure implements Cloneable {
 	 * @return true if the file exists; false otherwise.
 	 */
 	public boolean fileExists(VariableAutomaton fp) {
-		VariableAutomaton a = new VariableAutomaton(absolute(fp));
+		fp = new VariableAutomaton(absolute(fp));
 		// try as a regular file
-		a = a.removeLastSeparator();
-		if (a.subsetOf(files))
+		fp = fp.removeLastSeparator();
+		if (fp.subsetOf(files))
 			return true;
 
 		// try as a directory
-		a = a.concatenate(new VariableAutomaton(SEPARATOR));
-		return a.subsetOf(files);
+		fp = fp.concatenate(new VariableAutomaton(SEPARATOR));
+		return fp.subsetOf(files);
 	}
 
 	/**

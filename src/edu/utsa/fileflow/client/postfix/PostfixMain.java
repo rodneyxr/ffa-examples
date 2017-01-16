@@ -11,6 +11,8 @@ import edu.utsa.fileflow.utilities.FileFlowHelper;
 
 public class PostfixMain {
 
+	public static boolean DEBUG = false;
+	
 	private static final String TEST_SCRIPT = "scripts/test.ffa";
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {

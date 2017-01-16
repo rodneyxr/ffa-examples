@@ -15,16 +15,22 @@ public class PostfixAnalysis extends BaseAnalysis<PostfixAnalysisDomain> {
 
 	@Override
 	public PostfixAnalysisDomain onFinish(PostfixAnalysisDomain domain) {
-		System.out.println();
-		System.out.println("***** ON FINISH *****");
-		domain.table.forEach((k, v) -> System.out.printf("(%s.java): [%s : %s]\n", getClass().getSimpleName(), k, v));
+		if (PostfixMain.DEBUG) {
+			System.out.println();
+			System.out.println("***** ON FINISH *****");
+			domain.table
+					.forEach((k, v) -> System.out.printf("(%s.java): [%s : %s]\n", getClass().getSimpleName(), k, v));
+		}
 		return domain;
 	}
 
 	@Override
 	public PostfixAnalysisDomain onBefore(PostfixAnalysisDomain domain, FlowPointContext context) {
-		domain.table.forEach((k, v) -> System.out.printf("(%s.java): [%s : %s]\n", getClass().getSimpleName(), k, v));
-		System.out.println("==========================================================");
+		if (PostfixMain.DEBUG) {
+			domain.table
+					.forEach((k, v) -> System.out.printf("(%s.java): [%s : %s]\n", getClass().getSimpleName(), k, v));
+			System.out.println("==========================================================");
+		}
 		return domain;
 	}
 
