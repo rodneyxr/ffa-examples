@@ -155,7 +155,7 @@ public class FileStructure implements Cloneable {
 	 *            The variable automaton to union with <code>files</code>.
 	 */
 	private void union(VariableAutomaton fp) {
-		files = files.union(absolute(fp));
+		files = files.union(new VariableAutomaton(absolute(fp)).getSeparatedAutomaton());
 	}
 
 	@Override

@@ -4,15 +4,11 @@
 package edu.utsa.fileflow.client.fileflow;
 
 import dk.brics.automaton.Automaton;
-import dk.brics.automaton.FiniteStateTransducer;
 import edu.utsa.fileflow.analysis.Mergeable;
 
 public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 
 	public static final char SEPARATOR = '/';
-	private static final FiniteStateTransducer FST_PARENT = Transducers.parentDir();
-	private static final FiniteStateTransducer FST_REMOVE_DOUBLE_SEP = Transducers.removeDoubleSeparator();
-	private static final FiniteStateTransducer FST_REMOVE_LAST_SEPARATOR = Transducers.removeLastSeparator();
 
 	private Automaton variable;
 
@@ -25,7 +21,7 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 		if (variable.isEmpty())
 			this.variable = variable;
 		else
-			this.variable = FST_REMOVE_DOUBLE_SEP.intersection(variable);
+			this.variable = Transducers.removeDoubleSeparators(variable);
 	}
 
 	public static VariableAutomaton bottom() {
@@ -70,7 +66,7 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 		Automaton result = variable.intersection(a.concatenate(Automaton.makeAnyString()));
 		return !result.isEmpty();
 	}
-	
+
 	public boolean subsetOf(Automaton a) {
 		return variable.subsetOf(a);
 	}
@@ -86,7 +82,7 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	 * @return the parent directory of this automaton.
 	 */
 	public VariableAutomaton getParentDirectory() {
-		return new VariableAutomaton(FST_PARENT.intersection(variable));
+		return new VariableAutomaton(Transducers.parentDir(variable));
 	}
 
 	/**
@@ -95,7 +91,7 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	 *         exists.
 	 */
 	public VariableAutomaton removeLastSeparator() {
-		return new VariableAutomaton(FST_REMOVE_LAST_SEPARATOR.intersection(variable));
+		return new VariableAutomaton(Transducers.removeLastSeparator(variable));
 	}
 
 	public String toDot() {

@@ -1,13 +1,65 @@
 package edu.utsa.fileflow.client.fileflow;
 
+import dk.brics.automaton.Automaton;
 import dk.brics.automaton.FiniteStateTransducer;
 import dk.brics.automaton.TransducerState;
 import dk.brics.automaton.TransducerTransition;
 
-public class Transducers extends FiniteStateTransducer {
-	private static final long serialVersionUID = 1L;
+public class Transducers {
 
-	public static FiniteStateTransducer parentDir() {
+	private static final FiniteStateTransducer FST_BASENAME = basename();
+	private static final FiniteStateTransducer FST_PARENT_DIR = parentDir();
+	private static final FiniteStateTransducer FST_REMOVE_DOUBLE_SEP = removeDoubleSeparator();
+	private static final FiniteStateTransducer FST_REMOVE_LAST_SEP = removeLastSeparator();
+
+	public static Automaton basename(Automaton a) {
+		Automaton result = FST_BASENAME.intersection(a);
+		result.getAcceptStates().forEach(s -> {
+			s.setAccept(s.getTransitions().isEmpty());
+		});
+		return result;
+	}
+
+	public static Automaton parentDir(Automaton a) {
+		return FST_PARENT_DIR.intersection(a);
+	}
+
+	public static Automaton removeDoubleSeparators(Automaton a) {
+		return FST_REMOVE_DOUBLE_SEP.intersection(a);
+	}
+
+	public static Automaton removeLastSeparator(Automaton a) {
+		return FST_REMOVE_LAST_SEP.intersection(a);
+	}
+
+	static FiniteStateTransducer basename() {
+		FiniteStateTransducer fst = new FiniteStateTransducer();
+		TransducerState s0 = new TransducerState();
+		TransducerState s1 = new TransducerState();
+		TransducerState s2 = new TransducerState();
+
+		// s0 -> s0: accept anything => epsilon
+		s0.addEpsilonAcceptAllTransition(s0);
+
+		// s0 -> s1: accept '/' => epsilon
+		s0.addTransition(TransducerTransition.createEpsilonTransition('/', '/', s1));
+
+		// s1 -> s1: accept anything minus '/' => identical
+		s1.addIdenticalExcludeTransition('/', s1);
+
+		// s1 -> s2: accept '/' => epsilon
+		s1.addTransition(TransducerTransition.createEpsilonTransition('/', '/', s2));
+
+		// s2 -> s2: accept '/' => epsilon
+		s2.addTransition(TransducerTransition.createEpsilonTransition('/', '/', s2));
+
+		s1.setAccept(true);
+		s2.setAccept(true);
+		fst.setInitialState(s0);
+		return fst;
+	}
+
+	static FiniteStateTransducer parentDir() {
 		// Forward Slash - '/' => '\u002f'
 		// Back Slash '\' => '\u005c'
 		FiniteStateTransducer fst = new FiniteStateTransducer();
@@ -42,7 +94,7 @@ public class Transducers extends FiniteStateTransducer {
 	// S1 -> S2: input='/', output = empty
 	// S1 -> S0: input = All-'/', output = identical
 	// S2 -> S0: input = All-'/', output = identical
-	public static FiniteStateTransducer removeDoubleSeparator() {
+	static FiniteStateTransducer removeDoubleSeparator() {
 		FiniteStateTransducer fst = new FiniteStateTransducer();
 		TransducerState s0 = new TransducerState();
 		TransducerState s1 = new TransducerState();
@@ -70,7 +122,7 @@ public class Transducers extends FiniteStateTransducer {
 		return fst;
 	}
 
-	public static FiniteStateTransducer removeLastSeparator() {
+	static FiniteStateTransducer removeLastSeparator() {
 		FiniteStateTransducer fst = new FiniteStateTransducer();
 		TransducerState s0 = new TransducerState();
 		TransducerState s1 = new TransducerState();

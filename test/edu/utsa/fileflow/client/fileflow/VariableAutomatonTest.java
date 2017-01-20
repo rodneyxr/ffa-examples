@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import dk.brics.automaton.Automaton;
-import dk.brics.automaton.FiniteStateTransducer;
 import dk.brics.automaton.RegExp;
 import dk.brics.automaton.State;
 import dk.brics.automaton.Transition;
@@ -19,69 +18,6 @@ public class VariableAutomatonTest {
 	public void setUp() throws Exception {
 		Automaton.setMinimization(Automaton.MINIMIZE_BRZOZOWSKI);
 		Automaton.setMinimizeAlways(true);
-	}
-
-	final FiniteStateTransducer FST_PARENT = Transducers.parentDir();
-	final FiniteStateTransducer FST_REMOVE_DOUBLE_SEP = Transducers.removeDoubleSeparator();
-	final FiniteStateTransducer FST_REMOVE_LAST_SEP = Transducers.removeLastSeparator();
-
-	@Test
-	public void testCreateFSTParent() {
-		FiniteStateTransducer fst = Transducers.parentDir();
-		GraphvizGenerator.saveDOTToFile(fst.toDot(), "test/fst/fst_parent.dot");
-	}
-
-	@Test
-	public void testCreateFSTRemoveDoubleSeparator() {
-		FiniteStateTransducer fst = Transducers.removeDoubleSeparator();
-		GraphvizGenerator.saveDOTToFile(fst.toDot(), "test/fst/fst_rm_double_sep.dot");
-	}
-
-	@Test
-	public void testCreateFSTRemoveLastSeparator() {
-		FiniteStateTransducer fst = Transducers.removeLastSeparator();
-		GraphvizGenerator.saveDOTToFile(fst.toDot(), "test/fst/fst_rm_last_sep.dot");
-	}
-
-	@Test
-	public void testRemoveDoubleSepEnd() {
-		Automaton a = Automaton.makeString("a//");
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/rm_double_sep_end.orig.dot");
-		a = FST_REMOVE_DOUBLE_SEP.intersection(a);
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/rm_double_sep_end.dot");
-	}
-
-	@Test
-	public void testRemoveDoubleSep() {
-		// Automaton expected = Automaton.makeString("dir1/file1");
-		Automaton a1 = Automaton.makeString("dir1/");
-		Automaton a2 = Automaton.makeString("/file1");
-		Automaton a = a1.concatenate(a2);
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/rm_double_sep.orig.dot");
-		a = FST_REMOVE_DOUBLE_SEP.intersection(a);
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/rm_double_sep.dot");
-	}
-
-	@Test
-	public void testRemoveLastSeparatorFST() {
-		Automaton a = Automaton.makeString("/a/b/c/");
-		assertTrue(a.run("/a/b/c/"));
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/fst_test/rm_last_sep.orig.dot");
-
-		a = FST_REMOVE_LAST_SEP.intersection(a);
-		assertFalse(a.run("/a/b/c/"));
-		assertTrue(a.run("/a/b/c"));
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "test/fst_test/rm_last_sep.dot");
-
-		a = Automaton.makeString("/a/b/c");
-		assertTrue(a.run("/a/b/c"));
-		a = FST_REMOVE_LAST_SEP.intersection(a);
-		assertTrue(a.run("/a/b/c"));
-
-		a = Automaton.makeString("/a");
-		assertTrue(a.run("/a"));
-		a = FST_REMOVE_LAST_SEP.intersection(a);
-		assertTrue(a.run("/a"));
 	}
 
 	@Test
