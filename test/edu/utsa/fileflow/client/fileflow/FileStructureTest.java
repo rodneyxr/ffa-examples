@@ -7,19 +7,22 @@ import org.junit.Before;
 import org.junit.Test;
 
 import dk.brics.automaton.Automaton;
+import dk.brics.automaton.RegExp;
 import edu.utsa.fileflow.testutils.GraphvizGenerator;
 
 public class FileStructureTest {
+
+	private FileStructure fs;
 
 	@Before
 	public void setUp() throws Exception {
 		Automaton.setMinimization(Automaton.MINIMIZE_BRZOZOWSKI);
 		Automaton.setMinimizeAlways(true);
+		fs = new FileStructure();
 	}
 
 	@Test
 	public void testDirectoryExists() throws FileStructureException {
-		FileStructure fs = new FileStructure();
 		fs.createDirectory(new VariableAutomaton("/home"));
 		// '/' exists by default since it is root
 		assertTrue("'/' should exist", fs.fileExists(new VariableAutomaton("/")));
@@ -29,7 +32,6 @@ public class FileStructureTest {
 
 	@Test
 	public void testFileExists() throws FileStructureException {
-		FileStructure fs = new FileStructure();
 		fs.createDirectory(new VariableAutomaton("/home"));
 		fs.createFile(new VariableAutomaton("/home/file"));
 
@@ -40,19 +42,8 @@ public class FileStructureTest {
 		assertFalse("'/fake' should not exist", fs.fileExists(new VariableAutomaton("/fake")));
 	}
 
-	@Test
-	public void testSubsetOf() {
-		Automaton a = Automaton.makeString("/");
-		a = a.union(Automaton.makeString("/dir1/"));
-		a = a.union(Automaton.makeString("/dir1/file1"));
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "tmp/subset.dot");
-		assertTrue(Automaton.makeString("/dir1/file1").subsetOf(a));
-	}
-
 	@Test(expected = FileStructureException.class)
 	public void testCreateFileWhenDirectoryAlreadyExists() throws FileStructureException {
-		FileStructure fs = new FileStructure();
-
 		// create and assert '/a/'
 		fs.createDirectory(new VariableAutomaton("/a/"));
 		assertTrue(fs.fileExists(new VariableAutomaton("/a/")));
@@ -63,14 +54,96 @@ public class FileStructureTest {
 
 	@Test(expected = FileStructureException.class)
 	public void testCreateDirectoryWhenFileAlreadyExists() throws FileStructureException {
-		FileStructure fs = new FileStructure();
-
 		// create and assert '/a'
 		fs.createFile(new VariableAutomaton("/a"));
 		assertTrue(fs.fileExists(new VariableAutomaton("/a")));
 
 		// attempt to create directory at existing file '/a' (should fail)
 		fs.createDirectory(new VariableAutomaton("/a/"));
+	}
+
+	@Test
+	public void testIsDirectoryAndIsRegularFile() throws FileStructureException {
+		mkdir("/dir1");
+		assertTrue(fs.isDirectory(new VariableAutomaton("/dir1")));
+		assertTrue(fs.isDirectory(new VariableAutomaton("/dir1/")));
+		assertFalse(fs.isRegularFile(new VariableAutomaton("/dir1")));
+		assertFalse(fs.isRegularFile(new VariableAutomaton("/dir1/")));
+		assertFalse(fs.isDirectory(new VariableAutomaton("/dir1/blah")));
+		assertFalse(fs.isDirectory(new VariableAutomaton("/dir1blah")));
+
+		fs = new FileStructure();
+		touch("/file1");
+		assertFalse(fs.isDirectory(new VariableAutomaton("/file1")));
+		assertFalse(fs.isDirectory(new VariableAutomaton("/file1/")));
+		assertTrue(fs.isRegularFile(new VariableAutomaton("/file1")));
+		assertTrue(fs.isRegularFile(new VariableAutomaton("/file1/")));
+		assertFalse(fs.isRegularFile(new VariableAutomaton("/file1blah")));
+	}
+
+	@Test(expected = FileStructureException.class)
+	public void testCopySourceDoesNotExist() throws FileStructureException {
+		copy("/fake", "/");
+	}
+
+	@Test(expected = FileStructureException.class)
+	public void testCopyDestDoesNotExist() throws FileStructureException {
+		touch("/a");
+		copy("/a", "/fakedir/fakefile");
+	}
+
+	@Test(expected = FileStructureException.class)
+	public void testCopySamePath() throws FileStructureException {
+		touch("/a");
+		copy("/a", "/a");
+	}
+
+	@Test
+	public void testCopyFileToFile() throws FileStructureException {
+	}
+
+	@Test
+	public void testCopyDirToDir() throws FileStructureException {
+		// cp /home/user/ /dir1/dir2/
+		mkdir("/dir1/dir2/");
+		mkdir("/root/");
+		mkdir("/home/user/");
+		touch("/home/user/bashrc");
+		save(fs.files, "/test/fs/copy_files.orig.dot");
+		assertTrue(exists("/dir1/dir2"));
+		assertTrue(exists("/root/"));
+		assertTrue(exists("/home/user/bashrc"));
+
+		copy("/home/user/", "/dir1/dir2/"); // FIXME: with 2nd param as
+											// 'dir1/dir2'
+		save(fs.files, "/test/fs/copy_files.dot");
+		assertTrue(exists("/dir1/dir2/user/"));
+		assertTrue(exists("/dir1/dir2/user/bashrc"));
+	}
+
+	void touch(String fp) throws FileStructureException {
+		fs.createFile(regex(fp));
+	}
+
+	void mkdir(String fp) throws FileStructureException {
+		fs.createDirectory(regex(fp));
+	}
+
+	void copy(String src, String dest) throws FileStructureException {
+		fs.copy(new VariableAutomaton(src), new VariableAutomaton(dest));
+	}
+
+	boolean exists(String fp) {
+		return fs.fileExists(new VariableAutomaton(fp));
+	}
+
+	// returns a variable automaton given a regex
+	VariableAutomaton regex(String regex) {
+		return new VariableAutomaton(new RegExp(regex).toAutomaton());
+	}
+
+	void save(Automaton a, String filepath) {
+		GraphvizGenerator.saveDOTToFile(a.toDot(), filepath);
 	}
 
 }

@@ -70,6 +70,12 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	public boolean subsetOf(Automaton a) {
 		return variable.subsetOf(a);
 	}
+	
+	public boolean isSamePathAs(VariableAutomaton other) {
+		VariableAutomaton a1 = removeLastSeparator();
+		VariableAutomaton a2 = other.removeLastSeparator();
+		return a1.variable.equals(a2.variable);
+	}
 
 	/**
 	 * @return true if the automaton ends with a separator; false otherwise
@@ -129,6 +135,11 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	@Override
 	public VariableAutomaton merge(VariableAutomaton other) {
 		return union(other);
+	}
+	
+	@Override
+	public String toString() {
+		return variable.getCommonPrefix();
 	}
 
 	@Override

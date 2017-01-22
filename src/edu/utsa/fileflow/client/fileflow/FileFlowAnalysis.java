@@ -25,7 +25,7 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 	@Override
 	public FileFlowAnalysisDomain touch(FileFlowAnalysisDomain domain, FlowPointContext context)
 			throws AnalysisException {
-		VariableAutomaton va = getValue(domain, context);
+		VariableAutomaton va = getValue(domain, context, 0);
 
 		// add the automaton to the file structure
 		try {
@@ -40,8 +40,8 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 	@Override
 	public FileFlowAnalysisDomain mkdir(FileFlowAnalysisDomain domain, FlowPointContext context)
 			throws AnalysisException {
-		VariableAutomaton va = getValue(domain, context);
-
+		VariableAutomaton va = getValue(domain, context, 0);
+		
 		// add the automaton to the file structure
 		try {
 			domain.post.createDirectory(va);
@@ -49,6 +49,21 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 			throw new AnalysisException(e.getMessage());
 		}
 
+		return domain;
+	}
+
+	@Override
+	public FileFlowAnalysisDomain copy(FileFlowAnalysisDomain domain, FlowPointContext context)
+			throws AnalysisException {
+		VariableAutomaton v1 = getValue(domain, context, 0);
+		VariableAutomaton v2 = getValue(domain, context, 1);
+
+		try {
+			domain.post.copy(v1, v2);
+		} catch (FileStructureException e) {
+			throw new AnalysisException(e.getMessage());
+		}
+		
 		return domain;
 	}
 
@@ -169,9 +184,9 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 		return domain;
 	}
 
-	private VariableAutomaton getValue(FileFlowAnalysisDomain domain, FlowPointContext context) {
+	private VariableAutomaton getValue(FileFlowAnalysisDomain domain, FlowPointContext context, int n) {
 		FunctionCallContext ctx = (FunctionCallContext) context.getContext();
-		ValueContext v = ctx.value(0);
+		ValueContext v = ctx.value(n);
 
 		// get the variable from the symbol table or create a new one
 		if (v.Variable() != null) // if v is a variable

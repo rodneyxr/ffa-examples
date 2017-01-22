@@ -7,6 +7,8 @@
 package edu.utsa.fileflow.client.fileflow;
 
 import dk.brics.automaton.Automaton;
+import dk.brics.automaton.FiniteStateTransducer;
+import dk.brics.automaton.TransducerTransition;
 
 public class FileStructure implements Cloneable {
 
@@ -15,7 +17,8 @@ public class FileStructure implements Cloneable {
 		Automaton.setMinimizeAlways(true);
 	}
 
-	private static final Automaton SEPARATOR = Automaton.makeChar('/');
+	private static final Automaton SEPARATOR = Automaton.makeChar(VariableAutomaton.SEPARATOR);
+	private static final Automaton ANY = Automaton.makeAnyString();
 
 	private VariableAutomaton cwd = new VariableAutomaton("/");
 	Automaton files;
@@ -105,6 +108,91 @@ public class FileStructure implements Cloneable {
 	}
 
 	/**
+	 * Copies a file to another location in the file structure. Consider the
+	 * following cases:
+	 * <ul>
+	 * <li/>
+	 * <p/>
+	 * file1 to file2: If file2 exists it will be overwritten; else it will be
+	 * created
+	 * <li/>
+	 * <p/>
+	 * file1 to dir2: file1 will be copied into dir2 overwriting file1 in dir2
+	 * if it exists
+	 * <li/>
+	 * <p/>
+	 * dir1 to dir2: a copy of dir1 will be created in dir2. if dir2/dir1
+	 * happens to exist, contents will be merged overwriting the existing
+	 * <li/>
+	 * <p/>
+	 * dir1 to file2: cp: cannot overwrite non-directory 'file2' with directory
+	 * 'dir1'
+	 * <li/>
+	 * <p/>
+	 * file1 to non-existing: cp: cannot create regular file
+	 * 'non-existing/file1': No such file or directory
+	 * <li/>
+	 * <p/>
+	 * dir1 to non-existing: cp: cannot create directory 'non-existing/dir1': No
+	 * such file or directory
+	 * </ul>
+	 *
+	 * @param source
+	 *            The path pointing to the source file to copy
+	 * @param destination
+	 *            The path pointing to the destination location
+	 * @throws FileStructureException
+	 */
+	public void copy(VariableAutomaton source, VariableAutomaton destination) throws FileStructureException {
+		// if (dest exists && isdir) dest must end with a slash
+
+		// check if source exists
+		if (!fileExists(source))
+			throw new FileStructureException(String.format("cp: cannot stat '%s': No such file or directory", source));
+
+		// check if the paths point to the same file
+		if (source.isSamePathAs(destination))
+			throw new FileStructureException(String.format("cp: '%s' and '%s' are the same file", source, source));
+
+		// make sure either the destination or parent to destination exists
+		if (!fileExists(destination)) {
+			if (!fileExists(destination.getParentDirectory())) {
+				throw new FileStructureException(
+						String.format("cp: cannot create file '%s': No such file or directory", destination));
+			}
+		}
+
+		final Automaton src = absolute(source);
+		final Automaton dst = absolute(destination);
+
+		// get all files to be copied (absolute paths)
+		Automaton a = files.intersection(src.concatenate(ANY));
+		Automaton $src = Transducers.removeLastSeparator(src).concatenate(SEPARATOR);
+		$src = $src.concatenate(ANY);
+
+		// we need a FST to replace src prefix with empty
+		FiniteStateTransducer replace = FiniteStateTransducer.AutomatonToTransducer($src);
+		replace.getAcceptStates().forEach(s -> {
+			s.getTransitions().forEach(t -> {
+				((TransducerTransition) t).setIdentical(true);
+			});
+		});
+		a = replace.intersection(a);
+		// if source was a directory then initial state will be true
+		// but we need it to be false
+		a.getInitialState().setAccept(false);
+
+		// after this we are left with everything after source in a
+		// we need to prepend the base name to the result
+		Automaton basename = Transducers.basename(src);
+		a = basename.concatenate(SEPARATOR).concatenate(a);
+		VariableAutomaton insert = new VariableAutomaton(dst.concatenate(a));
+
+		// insert the files
+		files = files.union(insert.getSeparatedAutomaton());
+	}
+
+	/**
 	 * Determines whether a file exists. It does not matter if it is a directory
 	 * or regular file or possibly both.
 	 * 
@@ -121,6 +209,31 @@ public class FileStructure implements Cloneable {
 
 		// try as a directory
 		fp = fp.concatenate(new VariableAutomaton(SEPARATOR));
+		return fp.subsetOf(files);
+	}
+
+	/**
+	 * Tells if a file path is a directory in the file structure.
+	 * 
+	 * @param fp
+	 *            The file path to check if a directory exists at.
+	 * @return True if a directory exists at <code>fp</code>; false otherwise.
+	 */
+	public boolean isDirectory(VariableAutomaton fp) {
+		fp = fp.concatenate(new VariableAutomaton(SEPARATOR));
+		return fp.subsetOf(files);
+	}
+
+	/**
+	 * Tells if a file path is a regular file in the file structure.
+	 * 
+	 * @param fp
+	 *            The file path to check if a regular file exists at.
+	 * @return True if a regular file exists at <code>fp</code>; false
+	 *         otherwise.
+	 */
+	public boolean isRegularFile(VariableAutomaton fp) {
+		fp = fp.removeLastSeparator();
 		return fp.subsetOf(files);
 	}
 
