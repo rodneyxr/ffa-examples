@@ -81,46 +81,6 @@ public class FileStructureTest {
 		assertFalse(fs.isRegularFile(new VariableAutomaton("/file1blah")));
 	}
 
-	@Test(expected = FileStructureException.class)
-	public void testCopySourceDoesNotExist() throws FileStructureException {
-		copy("/fake", "/");
-	}
-
-	@Test(expected = FileStructureException.class)
-	public void testCopyDestDoesNotExist() throws FileStructureException {
-		touch("/a");
-		copy("/a", "/fakedir/fakefile");
-	}
-
-	@Test(expected = FileStructureException.class)
-	public void testCopySamePath() throws FileStructureException {
-		touch("/a");
-		copy("/a", "/a");
-	}
-
-	@Test
-	public void testCopyFileToFile() throws FileStructureException {
-	}
-
-	@Test
-	public void testCopyDirToDir() throws FileStructureException {
-		// cp /home/user/ /dir1/dir2/
-		mkdir("/dir1/dir2/");
-		mkdir("/root/");
-		mkdir("/home/user/");
-		touch("/home/user/bashrc");
-		save(fs.files, "/test/fs/copy_files.orig.dot");
-		assertTrue(exists("/dir1/dir2"));
-		assertTrue(exists("/root/"));
-		assertTrue(exists("/home/user/bashrc"));
-
-		copy("/home/user/", "/dir1/dir2/"); // FIXME: with 2nd param as
-											// 'dir1/dir2'
-		save(fs.files, "/test/fs/copy_files.dot");
-		assertTrue(exists("/dir1/dir2/user/"));
-		assertTrue(exists("/dir1/dir2/user/bashrc"));
-	}
-
 	void touch(String fp) throws FileStructureException {
 		fs.createFile(regex(fp));
 	}

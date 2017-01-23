@@ -12,16 +12,18 @@ import dk.brics.automaton.TransducerTransition;
 
 public class FileStructure implements Cloneable {
 
+	// automaton representing files in a file structure
+	Automaton files;
+
 	static {
 		Automaton.setMinimization(Automaton.MINIMIZE_BRZOZOWSKI);
 		Automaton.setMinimizeAlways(true);
 	}
 
-	private static final Automaton SEPARATOR = Automaton.makeChar(VariableAutomaton.SEPARATOR);
+	private static final Automaton SEPARATOR = Automaton.makeChar(VariableAutomaton.SEPARATOR_CHAR);
 	private static final Automaton ANY = Automaton.makeAnyString();
 
-	private VariableAutomaton cwd = new VariableAutomaton("/");
-	Automaton files;
+	private VariableAutomaton cwd = new VariableAutomaton(VariableAutomaton.SEPARATOR_AUT);
 
 	public FileStructure() {
 		this.files = SEPARATOR.clone();
@@ -33,7 +35,7 @@ public class FileStructure implements Cloneable {
 
 	public static FileStructure top() {
 		Automaton files = SEPARATOR.clone();
-		files.concatenate(Automaton.makeAnyString());
+		files.concatenate(ANY);
 		return new FileStructure(files);
 	}
 
@@ -69,18 +71,15 @@ public class FileStructure implements Cloneable {
 	 */
 	public void createFile(VariableAutomaton fp) throws FileStructureException {
 		if (fp.isDirectory())
-			throw new FileStructureException(String.format("touch: cannot touch '%s': Cannot touch a directory",
-					fp.getAutomaton().getCommonPrefix()));
+			throw new FileStructureException(String.format("touch: cannot touch '%s': Cannot touch a directory", fp));
 
 		// if the parent directory does not exist throw an exception
 		if (!fileExists(fp.getParentDirectory()))
-			throw new FileStructureException(String.format("touch: cannot touch '%s': No such file or directory",
-					fp.getAutomaton().getCommonPrefix()));
+			throw new FileStructureException(String.format("touch: cannot touch '%s': No such file or directory", fp));
 
 		// if the file already exists, throw an exception
 		if (fileExists(fp))
-			throw new FileStructureException(String.format("touch: cannot touch '%s': File already exists",
-					fp.getAutomaton().getCommonPrefix()));
+			throw new FileStructureException(String.format("touch: cannot touch '%s': File already exists", fp));
 
 		union(fp);
 	}
@@ -97,12 +96,11 @@ public class FileStructure implements Cloneable {
 	public void createDirectory(VariableAutomaton fp) throws FileStructureException {
 		// if fp does not have a trailing separator, then add one
 		if (!fp.endsWith(SEPARATOR))
-			fp = fp.concatenate(new VariableAutomaton("/"));
+			fp = fp.concatenate(VariableAutomaton.SEPARATOR_VA);
 
 		VariableAutomaton a = new VariableAutomaton(absolute(fp));
 		if (fileExists(a))
-			throw new FileStructureException(String.format("mkdir: cannot create directory '%s': File exists",
-					a.getAutomaton().getCommonPrefix()));
+			throw new FileStructureException(String.format("mkdir: cannot create directory '%s': File exists", a));
 
 		union(fp);
 	}
@@ -143,8 +141,10 @@ public class FileStructure implements Cloneable {
 	 *            The path pointing to the destination location
 	 * @throws FileStructureException
 	 */
-	public void copy(VariableAutomaton source, VariableAutomaton destination) throws FileStructureException {
-		// if (dest exists && isdir) dest must end with a slash
+	public void copy(final VariableAutomaton source, final VariableAutomaton destination)
+			throws FileStructureException {
+		boolean destExists = fileExists(destination);
+		VariableAutomaton $destination = destination;
 
 		// check if source exists
 		if (!fileExists(source))
@@ -155,40 +155,69 @@ public class FileStructure implements Cloneable {
 			throw new FileStructureException(String.format("cp: '%s' and '%s' are the same file", source, source));
 
 		// make sure either the destination or parent to destination exists
-		if (!fileExists(destination)) {
-			if (!fileExists(destination.getParentDirectory())) {
+		if (!destExists) {
+			VariableAutomaton destParent = destination.getParentDirectory();
+			if (!fileExists(destParent)) {
 				throw new FileStructureException(
 						String.format("cp: cannot create file '%s': No such file or directory", destination));
 			}
+			// if destination does not exist then change it to the parent
+			$destination = destParent;
 		}
 
-		final Automaton src = absolute(source);
-		final Automaton dst = absolute(destination);
+		// cache some booleans
+		boolean destIsDir = isDirectory(destination);
+		boolean destIsReg = isRegularFile(destination);
+		boolean srcIsDir = isDirectory(source);
+		boolean srcIsReg = isRegularFile(source);
 
-		// get all files to be copied (absolute paths)
-		Automaton a = files.intersection(src.concatenate(ANY));
-		Automaton $src = Transducers.removeLastSeparator(src).concatenate(SEPARATOR);
-		$src = $src.concatenate(ANY);
+		if (destIsDir) {
+			// if dest is a directory, dest must end with a slash
+			$destination = destination.concatenate(VariableAutomaton.SEPARATOR_VA);
+		} else if (srcIsReg && destIsReg) {
+		}
 
-		// we need a FST to replace src prefix with empty
-		FiniteStateTransducer replace = FiniteStateTransducer.AutomatonToTransducer($src);
-		replace.getAcceptStates().forEach(s -> {
-			s.getTransitions().forEach(t -> {
-				((TransducerTransition) t).setIdentical(true);
+		Automaton src = absolute(source);
+		Automaton dst = absolute($destination);
+		Automaton a;
+		
+		if (!destExists) {
+			// if dest does not exist then dest base name should be created
+			a = Transducers.basename(destination.getAutomaton());
+		} else {
+			// get all files to be copied (absolute paths)
+			a = files.intersection(src.concatenate(ANY));
+
+			if (srcIsReg)
+				src = absolute(source.getParentDirectory());
+			Automaton $src = Transducers.removeLastSeparator(src).concatenate(SEPARATOR);
+			if ($src.isEmpty())
+				$src = src;
+			$src = $src.concatenate(ANY);
+
+			// we need a FST to replace src prefix with empty
+			FiniteStateTransducer replace = FiniteStateTransducer.AutomatonToTransducer($src);
+			replace.getAcceptStates().forEach(s -> {
+				s.getTransitions().forEach(t -> {
+					((TransducerTransition) t).setIdentical(true);
+				});
 			});
-		});
-		a = replace.intersection(a);
-		// if source was a directory then initial state will be true
-		// but we need it to be false
-		a.getInitialState().setAccept(false);
+			a = replace.intersection(a);
+			// if source was a directory then initial state will be true
+			// but we need it to be false
+			a.getInitialState().setAccept(false);
 
-		// after this we are left with everything after source in a
-		// we need to prepend the base name to the result
-		Automaton basename = Transducers.basename(src);
-		a = basename.concatenate(SEPARATOR).concatenate(a);
+			// after this we are left with everything after source in a
+			// we need to prepend the base name to the result
+			// only prepend the base name if source is a directory
+			if (srcIsDir) {
+				Automaton basename = Transducers.basename(src);
+				a = basename.concatenate(SEPARATOR).concatenate(a);
+			}
+		}
+
+		// insert the source files to the file structure
 		VariableAutomaton insert = new VariableAutomaton(dst.concatenate(a));
-
-		// insert the files
 		files = files.union(insert.getSeparatedAutomaton());
 	}
 

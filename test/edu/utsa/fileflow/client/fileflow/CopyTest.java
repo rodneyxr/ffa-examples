@@ -1,19 +1,18 @@
 package edu.utsa.fileflow.client.fileflow;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import dk.brics.automaton.Automaton;
-import dk.brics.automaton.FiniteStateTransducer;
 import dk.brics.automaton.RegExp;
-import dk.brics.automaton.TransducerTransition;
 import edu.utsa.fileflow.testutils.GraphvizGenerator;
 
 public class CopyTest {
 
 	FileStructure fs;
-	final Automaton $x = new VariableAutomaton("/home/rodney/").getAutomaton();
-	final Automaton $y = new VariableAutomaton("/dir1/dir2/").getAutomaton();
 
 	@Before
 	public void setUp() throws Exception {
@@ -22,48 +21,82 @@ public class CopyTest {
 		fs = new FileStructure();
 	}
 
+	@Test(expected = FileStructureException.class)
+	public void testCopySourceDoesNotExist() throws FileStructureException {
+		copy("/fake", "/");
+	}
+
+	@Test(expected = FileStructureException.class)
+	public void testCopyDestDoesNotExist() throws FileStructureException {
+		touch("/a");
+		copy("/a", "/fakedir/fakefile");
+	}
+
+	@Test(expected = FileStructureException.class)
+	public void testCopySamePath() throws FileStructureException {
+		touch("/a");
+		copy("/a", "/a");
+	}
+
 	@Test
-	public void testCopy() throws Exception {
+	public void testCopyFileToFile() throws FileStructureException {
+		// test when dest file does NOT exist
+		// 'home/user/a' should be created
+		mkdir("/tmp/");
+		mkdir("/home/user/");
+		touch("/tmp/a");
+		touch("/tmp/b");
+		copy("/tmp/a", "/home/user/a");
+		assertTrue(exists("/tmp/a"));
+		assertTrue(fs.isRegularFile(new VariableAutomaton("/home/user/a")));
+		assertFalse(fs.isDirectory(new VariableAutomaton("/home/user/a")));
+		assertFalse(exists("/home/user/b"));
+
+		// test when dest file DOES exist
+		// 'tmp/a' should overwrite 'home/user/a'
+		fs = new FileStructure();
+		mkdir("/tmp/");
+		mkdir("/home/user/");
+		touch("/tmp/a");
+		touch("/tmp/b");
+		touch("/home/user/a");
+		assertTrue(exists("/home/user/a"));
+		assertTrue(fs.isRegularFile(new VariableAutomaton("/home/user/a")));
+		copy("/tmp/a", "/home/user/a");
+		assertTrue(exists("/tmp/a"));
+		assertTrue(fs.isRegularFile(new VariableAutomaton("/home/user/a")));
+		assertFalse(fs.isDirectory(new VariableAutomaton("/home/user/a")));
+		assertFalse(exists("/home/user/b"));
+
+		// test when both files are in root directory
+		fs = new FileStructure();
+		touch("/a");
+		copy("/a", "/b");
+		assertTrue(exists("/a"));
+		assertTrue(exists("/b"));
+	}
+
+	@Test
+	public void testCopyFileToDir() throws FileStructureException {
+
+	}
+
+	@Test
+	public void testCopyDirToDir() throws FileStructureException {
+		// cp /home/user/ /dir1/dir2/
 		mkdir("/dir1/dir2/");
-		mkdir("/root");
-		mkdir("/home/rodney");
-		touch("/home/rodney/bashrc");
-		// cp '/home/rodney/' '/dir1/dir2/'
+		mkdir("/root/");
+		mkdir("/home/user/");
+		touch("/home/user/bashrc");
+		save(fs.files, "/test/fs/copy_files.orig.dot");
+		assertTrue(exists("/dir1/dir2"));
+		assertTrue(exists("/root/"));
+		assertTrue(exists("/home/user/bashrc"));
 
-		Automaton a = fs.files;
-		// get all files to be copied (absolute paths)
-		// a = a intersect [$x concat *]
-		a = a.intersection($x.concatenate(Automaton.makeAnyString()));
-
-		Automaton $x_ = Transducers.removeLastSeparator($x).concatenate(Automaton.makeChar('/'));
-		$x_ = $x_.concatenate(Automaton.makeAnyString());
-
-		// need a replace FST to replace $x with empty
-		FiniteStateTransducer replace = FiniteStateTransducer.AutomatonToTransducer($x_);
-		replace.getAcceptStates().forEach(s -> {
-			s.getTransitions().forEach(t -> {
-				((TransducerTransition) t).setIdentical(true);
-			});
-		});
-
-		a = replace.intersection(a);
-		a.getInitialState().setAccept(false);
-		Automaton basename = Transducers.basename($x);
-
-		// after this we are left with everything after $x
-		// we need to prepend the base name to the result
-		a = basename.concatenate(Automaton.makeChar('/')).concatenate(a);
-		VariableAutomaton insert = new VariableAutomaton($y.concatenate(a));
-
-		// insert the files
-		fs.files = fs.files.union(insert.getSeparatedAutomaton());
-
-		save(fs.files, "test/copy/fs.dot");
-		save(a, "test/copy/a.dot");
-		save($x_, "test/copy/xprime.dot");
-		save(replace, "test/copy/replace.dot");
-		save(basename, "test/copy/basename.dot");
-		save(insert.getAutomaton(), "test/copy/insert.dot");
+		copy("/home/user/", "/dir1/dir2");
+		save(fs.files, "/test/fs/copy_files.dot");
+		assertTrue(exists("/dir1/dir2/user/"));
+		assertTrue(exists("/dir1/dir2/user/bashrc"));
 	}
 
 	void touch(String fp) throws FileStructureException {
@@ -72,6 +105,14 @@ public class CopyTest {
 
 	void mkdir(String fp) throws FileStructureException {
 		fs.createDirectory(regex(fp));
+	}
+
+	void copy(String src, String dest) throws FileStructureException {
+		fs.copy(new VariableAutomaton(src), new VariableAutomaton(dest));
+	}
+
+	boolean exists(String fp) {
+		return fs.fileExists(new VariableAutomaton(fp));
 	}
 
 	// returns a variable automaton given a regex

@@ -8,7 +8,11 @@ import edu.utsa.fileflow.analysis.Mergeable;
 
 public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 
-	public static final char SEPARATOR = '/';
+	public static final char SEPARATOR_CHAR = '/';
+	public static final Automaton SEPARATOR_AUT = Automaton.makeChar(SEPARATOR_CHAR);
+	public static final VariableAutomaton SEPARATOR_VA = new VariableAutomaton(SEPARATOR_AUT);
+	
+	private static final Automaton ANY_STRING_AUT = Automaton.makeAnyString();
 
 	private Automaton variable;
 
@@ -29,7 +33,7 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	}
 
 	public static VariableAutomaton top() {
-		return new VariableAutomaton(Automaton.makeChar(SEPARATOR).concatenate(Automaton.makeAnyString()));
+		return new VariableAutomaton(SEPARATOR_AUT.concatenate(ANY_STRING_AUT));
 	}
 
 	/**
@@ -58,19 +62,19 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	}
 
 	public boolean endsWith(Automaton a) {
-		Automaton result = variable.intersection(Automaton.makeAnyString().concatenate(a));
+		Automaton result = variable.intersection(ANY_STRING_AUT.concatenate(a));
 		return !result.isEmpty();
 	}
 
 	public boolean startsWith(Automaton a) {
-		Automaton result = variable.intersection(a.concatenate(Automaton.makeAnyString()));
+		Automaton result = variable.intersection(a.concatenate(ANY_STRING_AUT));
 		return !result.isEmpty();
 	}
 
 	public boolean subsetOf(Automaton a) {
 		return variable.subsetOf(a);
 	}
-	
+
 	public boolean isSamePathAs(VariableAutomaton other) {
 		VariableAutomaton a1 = removeLastSeparator();
 		VariableAutomaton a2 = other.removeLastSeparator();
@@ -81,7 +85,7 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	 * @return true if the automaton ends with a separator; false otherwise
 	 */
 	public boolean isDirectory() {
-		return endsWith(Automaton.makeChar(SEPARATOR));
+		return endsWith(SEPARATOR_AUT);
 	}
 
 	/**
@@ -123,7 +127,7 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 		a.getStates().forEach(s -> {
 			s.getTransitions().forEach(t -> {
 				// if transition is a separator
-				if (t.getMin() <= SEPARATOR && t.getMax() >= SEPARATOR) {
+				if (t.getMin() <= SEPARATOR_CHAR && t.getMax() >= SEPARATOR_CHAR) {
 					// make destination state an accept state
 					t.getDest().setAccept(true);
 				}
@@ -136,9 +140,12 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	public VariableAutomaton merge(VariableAutomaton other) {
 		return union(other);
 	}
-	
+
 	@Override
 	public String toString() {
+		String singleton = variable.getSingleton();
+		if (singleton != null)
+			return singleton;
 		return variable.getCommonPrefix();
 	}
 
