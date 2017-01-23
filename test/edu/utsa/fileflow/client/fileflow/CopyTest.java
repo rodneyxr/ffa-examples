@@ -85,7 +85,16 @@ public class CopyTest {
 
 	@Test
 	public void testCopyFileToDir() throws FileStructureException {
-
+		touch("/a");
+		mkdir("/b/");
+		copy("/a", "/b");
+		assertTrue(exists("/a"));
+		assertTrue(exists("/b/"));
+		assertTrue(exists("/b/a"));
+		assertTrue(fs.isDirectory(regex("/b")));
+		assertFalse(fs.isRegularFile(regex("/b")));
+		assertTrue(fs.isRegularFile(regex("/b/a")));
+		assertFalse(fs.isDirectory(regex("/b/a")));
 	}
 
 	@Test
@@ -103,7 +112,30 @@ public class CopyTest {
 		copy("/home/user/", "/dir1/dir2");
 		save(fs.files, "/test/fs/copy_files.dot");
 		assertTrue(exists("/dir1/dir2/user/"));
+		assertTrue(fs.isDirectory(new VariableAutomaton("/dir1/dir2/user/")));
+		assertFalse(fs.isRegularFile(new VariableAutomaton("/dir1/dir2/user/")));
 		assertTrue(exists("/dir1/dir2/user/bashrc"));
+		assertTrue(fs.isRegularFile(new VariableAutomaton("/dir1/dir2/user/bashrc")));
+		assertFalse(fs.isDirectory(new VariableAutomaton("/dir1/dir2/user/bashrc")));
+	}
+
+	@Test(expected = FileStructureException.class)
+	public void testCopyDirToFile() throws FileStructureException {
+		mkdir("a");
+		touch("b");
+		copy("a", "b");
+	}
+
+	@Test(expected = FileStructureException.class)
+	public void testCopyFileToNonExisting() throws FileStructureException {
+		touch("a");
+		copy("a", "fake/");
+	}
+
+	@Test(expected = FileStructureException.class)
+	public void testCopyDirToNonExisting() throws FileStructureException {
+		mkdir("/a");
+		copy("a", "fake/fake");
 	}
 
 	void touch(String fp) throws FileStructureException {

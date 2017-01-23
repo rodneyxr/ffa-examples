@@ -154,27 +154,38 @@ public class FileStructure implements Cloneable {
 		if (source.isSamePathAs(destination))
 			throw new FileStructureException(String.format("cp: '%s' and '%s' are the same file", source, source));
 
-		// make sure either the destination or parent to destination exists
-		if (!destExists) {
-			VariableAutomaton destParent = destination.getParentDirectory();
-			if (!fileExists(destParent)) {
-				throw new FileStructureException(
-						String.format("cp: cannot create file '%s': No such file or directory", destination));
-			}
-			// if destination does not exist then change it to the parent
-			$destination = destParent;
-		}
-
 		// cache some booleans
 		boolean destIsDir = isDirectory(destination);
 		boolean destIsReg = isRegularFile(destination);
 		boolean srcIsDir = isDirectory(source);
 		boolean srcIsReg = isRegularFile(source);
 
+		// make sure either the destination or parent to destination exists
+		if (!destExists) {
+			if (srcIsReg && destination.isDirectory())
+				throw new FileStructureException(
+						String.format("cp: cannot create regular file '%s': No such file or directory", destination));
+
+			VariableAutomaton destParent = destination.getParentDirectory();
+			if (!fileExists(destParent)) {
+				if (srcIsReg) {
+					throw new FileStructureException(
+							String.format("cp: cannot create file '%s': No such file or directory", destination));
+				} else {
+					throw new FileStructureException(
+							String.format("cp: cannot create directory '%s': No such file or directory", destination));
+				}
+			}
+			// if destination does not exist then change it to the parent
+			$destination = destParent;
+		}
+
 		if (destIsDir) {
 			// if dest is a directory, dest must end with a slash
 			$destination = destination.concatenate(VariableAutomaton.SEPARATOR_VA);
-		} else if (srcIsReg && destIsReg) {
+		} else if (srcIsDir && destIsReg) {
+			throw new FileStructureException(
+					String.format("cp: cannot overwrite non-directory '%s' with directory '%s'", destination, source));
 		}
 
 		Automaton src = absolute(source);
