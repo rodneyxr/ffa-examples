@@ -180,10 +180,10 @@ public class FileStructure implements Cloneable {
 		Automaton src = absolute(source);
 		Automaton dst = absolute($destination);
 		Automaton a;
-		
+
 		if (!destExists) {
 			// if dest does not exist then dest base name should be created
-			a = Transducers.basename(destination.getAutomaton());
+			a = Transducers.basename(absolute(destination));
 		} else {
 			// get all files to be copied (absolute paths)
 			a = files.intersection(src.concatenate(ANY));
@@ -249,7 +249,8 @@ public class FileStructure implements Cloneable {
 	 * @return True if a directory exists at <code>fp</code>; false otherwise.
 	 */
 	public boolean isDirectory(VariableAutomaton fp) {
-		fp = fp.concatenate(new VariableAutomaton(SEPARATOR));
+		fp = new VariableAutomaton(absolute(fp));
+		fp = fp.concatenate(VariableAutomaton.SEPARATOR_VA);
 		return fp.subsetOf(files);
 	}
 
@@ -262,6 +263,7 @@ public class FileStructure implements Cloneable {
 	 *         otherwise.
 	 */
 	public boolean isRegularFile(VariableAutomaton fp) {
+		fp = new VariableAutomaton(absolute(fp));
 		fp = fp.removeLastSeparator();
 		return fp.subsetOf(files);
 	}

@@ -92,7 +92,8 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	 * @return the parent directory of this automaton.
 	 */
 	public VariableAutomaton getParentDirectory() {
-		return new VariableAutomaton(Transducers.parentDir(variable));
+		VariableAutomaton a = SEPARATOR_VA.concatenate(this);
+		return new VariableAutomaton(Transducers.parentDir(a.getAutomaton()));
 	}
 
 	/**

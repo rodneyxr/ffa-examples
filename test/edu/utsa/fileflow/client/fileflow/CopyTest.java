@@ -74,6 +74,13 @@ public class CopyTest {
 		copy("/a", "/b");
 		assertTrue(exists("/a"));
 		assertTrue(exists("/b"));
+
+		// test when both files are in root directory without slashes
+		fs = new FileStructure();
+		touch("a");
+		copy("a", "b");
+		assertTrue(exists("/a"));
+		assertTrue(exists("/b"));
 	}
 
 	@Test
