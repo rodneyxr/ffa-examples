@@ -12,13 +12,14 @@ import edu.utsa.fileflow.utilities.FileFlowHelper;
 public class PostfixMain {
 
 	public static boolean DEBUG = false;
-	
+
 	private static final String TEST_SCRIPT = "scripts/test.ffa";
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(new File(TEST_SCRIPT));
-		Analyzer<PostfixAnalysisDomain, PostfixAnalysis> analyzer = new Analyzer<>(PostfixAnalysisDomain.class,
-				PostfixAnalysis.class);
+		PostfixAnalysisDomain domain = new PostfixAnalysisDomain();
+		PostfixAnalysis analysis = new PostfixAnalysis();
+		Analyzer<PostfixAnalysisDomain, PostfixAnalysis> analyzer = new Analyzer<>(domain, analysis);
 		try {
 			analyzer.analyze(cfg);
 		} catch (AnalysisException e) {

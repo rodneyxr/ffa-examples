@@ -18,9 +18,11 @@ public class FileFlowAnalysisMain {
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(new File(TEST_SCRIPT));
 		writeDOT(cfg);
+
 		// perform prefix analysis
-		Analyzer<FileFlowAnalysisDomain, FileFlowAnalysis> analyzer = new Analyzer<>(FileFlowAnalysisDomain.class,
-				FileFlowAnalysis.class);
+		FileFlowAnalysisDomain domain = new FileFlowAnalysisDomain();
+		FileFlowAnalysis analysis = new FileFlowAnalysis();
+		Analyzer<FileFlowAnalysisDomain, FileFlowAnalysis> analyzer = new Analyzer<>(domain, analysis);
 		try {
 			analyzer.analyze(cfg);
 		} catch (AnalysisException e) {

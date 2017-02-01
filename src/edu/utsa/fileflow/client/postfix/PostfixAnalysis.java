@@ -3,7 +3,7 @@ package edu.utsa.fileflow.client.postfix;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import edu.utsa.fileflow.analysis.AnalysisException;
-import edu.utsa.fileflow.analysis.BaseAnalysis;
+import edu.utsa.fileflow.analysis.Analysis;
 import edu.utsa.fileflow.antlr.FileFlowParser.ArrayValueContext;
 import edu.utsa.fileflow.antlr.FileFlowParser.AssignmentContext;
 import edu.utsa.fileflow.antlr.FileFlowParser.ExpressionContext;
@@ -11,7 +11,7 @@ import edu.utsa.fileflow.antlr.FileFlowParser.ValueContext;
 import edu.utsa.fileflow.antlr.FileFlowParser.VarValueContext;
 import edu.utsa.fileflow.cfg.FlowPointContext;
 
-public class PostfixAnalysis extends BaseAnalysis<PostfixAnalysisDomain> {
+public class PostfixAnalysis extends Analysis<PostfixAnalysisDomain> {
 
 	@Override
 	public PostfixAnalysisDomain onFinish(PostfixAnalysisDomain domain) {

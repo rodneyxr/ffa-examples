@@ -15,8 +15,9 @@ public class DummyMain {
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(new File(TEST_SCRIPT));
-		Analyzer<DummyAnalysisDomain, DummyAnalysis> analyzer = new Analyzer<>(DummyAnalysisDomain.class,
-				DummyAnalysis.class);
+		DummyAnalysisDomain domain = new DummyAnalysisDomain();
+		DummyAnalysis analysis = new DummyAnalysis();
+		Analyzer<DummyAnalysisDomain, DummyAnalysis> analyzer = new Analyzer<>(domain, analysis);
 		try {
 			analyzer.analyze(cfg);
 		} catch (AnalysisException e) {

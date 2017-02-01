@@ -2,8 +2,8 @@ package edu.utsa.fileflow.client.fileflow;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import edu.utsa.fileflow.analysis.Analysis;
 import edu.utsa.fileflow.analysis.AnalysisException;
-import edu.utsa.fileflow.analysis.BaseAnalysis;
 import edu.utsa.fileflow.antlr.FileFlowParser.ArrayValueContext;
 import edu.utsa.fileflow.antlr.FileFlowParser.AssignmentContext;
 import edu.utsa.fileflow.antlr.FileFlowParser.ExpressionContext;
@@ -13,7 +13,7 @@ import edu.utsa.fileflow.antlr.FileFlowParser.VarValueContext;
 import edu.utsa.fileflow.cfg.FlowPointContext;
 import edu.utsa.fileflow.testutils.GraphvizGenerator;
 
-public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
+public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 
 	@Override
 	public FileFlowAnalysisDomain onFinish(FileFlowAnalysisDomain domain) throws AnalysisException {
@@ -41,7 +41,7 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 	public FileFlowAnalysisDomain mkdir(FileFlowAnalysisDomain domain, FlowPointContext context)
 			throws AnalysisException {
 		VariableAutomaton va = getValue(domain, context, 0);
-		
+
 		// add the automaton to the file structure
 		try {
 			domain.post.createDirectory(va);
@@ -63,7 +63,7 @@ public class FileFlowAnalysis extends BaseAnalysis<FileFlowAnalysisDomain> {
 		} catch (FileStructureException e) {
 			throw new AnalysisException(e.getMessage());
 		}
-		
+
 		return domain;
 	}
 

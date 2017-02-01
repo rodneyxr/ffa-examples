@@ -13,15 +13,17 @@ import edu.utsa.fileflow.utilities.FileFlowHelper;
 public class PrefixMain {
 
 	public static boolean DEBUG = false;
-	
+
 	private static final String TEST_SCRIPT = "scripts/test.ffa";
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(new File(TEST_SCRIPT));
 		writeDOT(cfg);
+
 		// perform prefix analysis
-		Analyzer<PrefixAnalysisDomain, PrefixAnalysis> analyzer = new Analyzer<>(PrefixAnalysisDomain.class,
-				PrefixAnalysis.class);
+		PrefixAnalysisDomain domain = new PrefixAnalysisDomain();
+		PrefixAnalysis analysis = new PrefixAnalysis();
+		Analyzer<PrefixAnalysisDomain, PrefixAnalysis> analyzer = new Analyzer<>(domain, analysis);
 		try {
 			analyzer.analyze(cfg);
 		} catch (AnalysisException e) {

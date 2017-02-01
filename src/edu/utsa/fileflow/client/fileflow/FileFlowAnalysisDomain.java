@@ -4,9 +4,8 @@ import edu.utsa.fileflow.analysis.AnalysisDomain;
 
 public class FileFlowAnalysisDomain extends AnalysisDomain<FileFlowAnalysisDomain> {
 
-	FileStructure post = new FileStructure();
-
 	SymbolTable table = new SymbolTable();
+	FileStructure post = new FileStructure();
 
 	@Override
 	public FileFlowAnalysisDomain merge(FileFlowAnalysisDomain domain) {
