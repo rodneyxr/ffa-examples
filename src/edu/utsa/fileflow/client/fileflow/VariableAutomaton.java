@@ -141,6 +141,14 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	public VariableAutomaton merge(VariableAutomaton other) {
 		return union(other);
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof VariableAutomaton))
+			return false;
+		VariableAutomaton other = (VariableAutomaton) o;
+		return variable.equals(other.variable);
+	}
 
 	@Override
 	public String toString() {
