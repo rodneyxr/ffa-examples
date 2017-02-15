@@ -10,7 +10,7 @@ import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
 import dk.brics.automaton.State;
 import dk.brics.automaton.Transition;
-import edu.utsa.fileflow.testutils.GraphvizGenerator;
+import edu.utsa.fileflow.utilities.GraphvizGenerator;
 
 public class VariableAutomatonTest {
 

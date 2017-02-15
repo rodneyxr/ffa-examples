@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.FiniteStateTransducer;
-import edu.utsa.fileflow.testutils.GraphvizGenerator;
+import edu.utsa.fileflow.utilities.GraphvizGenerator;
 
 public class TransducersTest {
 
