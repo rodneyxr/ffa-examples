@@ -3,15 +3,9 @@ package edu.utsa.fileflow.client.fileflow.variable;
 import dk.brics.automaton.Automaton;
 import dk.brics.string.grammar.Grammar;
 import dk.brics.string.grammar.Nonterminal;
-import dk.brics.string.grammar.operations.Grammar2MLFA;
-import dk.brics.string.mlfa.MLFA;
-import dk.brics.string.mlfa.MLFAState;
-import dk.brics.string.mlfa.MLFAStatePair;
-import dk.brics.string.mlfa.operations.MLFA2Automaton;
-import edu.utsa.fileflow.utilities.GraphvizGenerator;
-import org.junit.Test;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Rodney on 2/12/2017.
@@ -22,17 +16,33 @@ public class VariableGrammar {
 
     Grammar grammar = new Grammar();
 
-    @Test
-    public void addUnitProduction() throws Exception {
-        Nonterminal nt0 = grammar.addNonterminal();
-        Nonterminal nt1 = grammar.addNonterminal();
-        grammar.addUnitProduction(nt0, nt1);
-        System.out.println(grammar.getNonterminals());
-        MLFA mlfa = new Grammar2MLFA(grammar).convert();
-        System.out.println(mlfa.toString());
-        List<MLFAState> states = mlfa.getStates();
-        Automaton a = new MLFA2Automaton(mlfa).extract(new MLFAStatePair(states.get(3), states.get(2)));
-        GraphvizGenerator.saveDOTToFile(a.toDot(), "test/grammar.dot");
+    // maps variables -> nonterminal keys in the grammar
+    Map<String, Nonterminal> variables = new HashMap<>();
+
+    public Nonterminal addNonterminal(String variable) {
+        Nonterminal nonterminal = grammar.addNonterminal();
+        variables.put(variable, nonterminal);
+        return nonterminal;
+    }
+
+    // $x0 = 'a';
+    public void addAutomatonProduction(String v, Automaton a) {
+        grammar.addAutomatonProduction(variables.get(v), a);
+    }
+
+    // $x0 = $x1;
+    public void addUnitProduction(String v1, String v2) {
+        Nonterminal nt1 = variables.get(v1);
+        Nonterminal nt2 = variables.get(v2);
+        grammar.addUnitProduction(nt1, nt2);
+    }
+
+    // $x0 = $x1.$x2;
+    public void addPairProduction(String v1, String v2, String v3) {
+        Nonterminal nt1 = variables.get(v1);
+        Nonterminal nt2 = variables.get(v2);
+        Nonterminal nt3 = variables.get(v3);
+        grammar.addPairProduction(nt1, nt2, nt3);
     }
 
 }
