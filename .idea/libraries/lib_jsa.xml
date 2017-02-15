@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="lib-jsa">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../brics-jsa/lib/soot.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../brics-jsa/lib/automaton.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../brics-jsa/lib/junit-4.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../brics-jsa/lib/log4j-1.2.14.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../brics-jsa/lib/polyglot.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

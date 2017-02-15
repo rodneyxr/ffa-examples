@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="lib-analysis">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/antlr-4.5.1-complete.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ffa-grammar-2016.12.15.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
