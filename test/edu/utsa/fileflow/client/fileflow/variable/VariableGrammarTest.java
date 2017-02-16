@@ -1,17 +1,10 @@
 package edu.utsa.fileflow.client.fileflow.variable;
 
 import dk.brics.automaton.Automaton;
-import dk.brics.string.grammar.Grammar;
-import dk.brics.string.grammar.Nonterminal;
-import dk.brics.string.grammar.operations.Grammar2MLFA;
-import dk.brics.string.mlfa.MLFA;
-import dk.brics.string.mlfa.MLFAState;
-import dk.brics.string.mlfa.MLFAStatePair;
-import dk.brics.string.mlfa.operations.MLFA2Automaton;
-import edu.utsa.fileflow.utilities.GraphvizGenerator;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
-import java.util.List;
+import static org.junit.Assert.assertThat;
 
 /**
  * Created by Rodney on 2/12/2017.
@@ -21,23 +14,18 @@ import java.util.List;
 public class VariableGrammarTest {
 
     @Test
-    public void testGrammarToAutomaton() throws Exception {
+    public void testGetVariable() throws Exception {
         // $x0 = 'a';
-        Grammar g = new Grammar();
-        Nonterminal x0 = g.addNonterminal();
+        VariableGrammar g = new VariableGrammar();
+        Variable x0 = new Variable("$x0", 0);
+        g.addNonterminal(x0);
         g.addAutomatonProduction(x0, Automaton.makeString("a"));
-        MLFA mlfa = new Grammar2MLFA(g).convert();
-        System.out.println(mlfa);
-        List<MLFAState> states = mlfa.getStates();
-        Automaton a = new MLFA2Automaton(mlfa).extract(new MLFAStatePair(states.get(1), states.get(0)));
-        GraphvizGenerator.saveDOTToFile(a.toDot(), "tmp/automaton.dot");
+        Automaton a = g.getVariable(x0);
+        String dot = a.toDot();
+        // GraphvizGenerator.saveDOTToFile(dot, "tmp/automaton.dot");
+        assertThat(dot, CoreMatchers.containsString("initial -> 0"));
+        assertThat(dot, CoreMatchers.containsString("0 -> 1 [label=\"a\"]"));
+        assertThat(dot, CoreMatchers.containsString("1 [shape=doublecircle,label=\"\"];"));
     }
 
-    @Test
-    public void testVariableGrammar() throws Exception {
-        VariableGrammar g = new VariableGrammar();
-        g.addNonterminal("$x0");
-        g.addAutomatonProduction("$x0", Automaton.makeString("a"));
-        System.out.println(g.grammar.getCharsets());
-    }
 }
