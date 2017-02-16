@@ -15,19 +15,17 @@ import java.util.Map;
  * <p>
  * This class is a wrapper for {@link dk.brics.string.grammar.Grammar}.
  */
-public class VariableGrammar {
+public class VariableGrammar implements Cloneable {
 
     Grammar grammar = new Grammar();
+
+    // maps variables to nonterminals in the grammar
+    private Map<Variable, Nonterminal> variables = new HashMap<>();
 
     /* Grammar to MLFA to Automaton */
     private MLFA mlfa;
     private MLFA2Automaton m2a;
-
-    // isDirty is true when the MLFA needs to be recomputed
-    private boolean isDirty = true;
-
-    // maps variables to nonterminals in the grammar
-    private Map<Variable, Nonterminal> variables = new HashMap<>();
+    private boolean isDirty = true; // true when the MLFA needs to be recomputed
 
     public Nonterminal addNonterminal(Variable v) {
         isDirty = true;
@@ -73,6 +71,21 @@ public class VariableGrammar {
             isDirty = false;
         }
         return m2a.extract(g2m.getMLFAStatePair(variables.get(v)));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof VariableGrammar))
+            return false;
+        VariableGrammar other = (VariableGrammar) obj;
+        return grammar.getNonterminals().equals(other.grammar.getNonterminals());
+    }
+
+    @Override
+    public VariableGrammar clone() {
+        VariableGrammar clone = new VariableGrammar();
+        clone.grammar = grammar.copy();
+        return clone;
     }
 
 }

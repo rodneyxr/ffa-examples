@@ -1,6 +1,5 @@
 package edu.utsa.fileflow.client.fileflow.variable;
 
-import dk.brics.string.grammar.Grammar;
 import edu.utsa.fileflow.analysis.AnalysisDomain;
 
 import java.util.HashSet;
@@ -9,12 +8,13 @@ import java.util.Set;
 /**
  * Created by Rodney on 2/11/2017.
  * <p>
- * This class contains the analysis domain for variable analysis. It holds a grammar which w
+ * This class is analysis domain for variable analysis. It holds a grammar which
+ * will track all productions and live variables in the entire program.
  */
 public class VariableAnalysisDomain extends AnalysisDomain<VariableAnalysisDomain> {
 
-    Grammar grammar;
-    Set<Variable> liveVariables;
+    VariableGrammar grammar = new VariableGrammar();
+    Set<Variable> liveVariables = new HashSet<>();
 
     @Override
     public VariableAnalysisDomain merge(VariableAnalysisDomain domain) {
@@ -30,7 +30,7 @@ public class VariableAnalysisDomain extends AnalysisDomain<VariableAnalysisDomai
     @Override
     public VariableAnalysisDomain bottom() {
         VariableAnalysisDomain bottom = new VariableAnalysisDomain();
-        bottom.grammar = new Grammar();
+        bottom.grammar = new VariableGrammar();
         bottom.liveVariables = new HashSet<>();
         return bottom;
     }
@@ -46,7 +46,10 @@ public class VariableAnalysisDomain extends AnalysisDomain<VariableAnalysisDomai
 
     @Override
     public VariableAnalysisDomain clone() {
-        return null;
+        VariableAnalysisDomain clone = bottom();
+        clone.liveVariables.addAll(liveVariables);
+        clone.grammar = grammar.clone();
+        return clone;
     }
 
 }
