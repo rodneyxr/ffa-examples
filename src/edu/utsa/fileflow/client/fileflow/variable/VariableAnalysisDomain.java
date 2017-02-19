@@ -2,9 +2,6 @@ package edu.utsa.fileflow.client.fileflow.variable;
 
 import edu.utsa.fileflow.analysis.AnalysisDomain;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Created by Rodney on 2/11/2017.
  * <p>
@@ -13,43 +10,45 @@ import java.util.Set;
  */
 public class VariableAnalysisDomain extends AnalysisDomain<VariableAnalysisDomain> {
 
-    VariableGrammar grammar = new VariableGrammar();
-    Set<Variable> liveVariables = new HashSet<>();
+	VariableGrammar grammar = new VariableGrammar();
+	LiveVariableMap liveVariables = new LiveVariableMap();
 
-    @Override
-    public VariableAnalysisDomain merge(VariableAnalysisDomain domain) {
-        return null;
-    }
+	@Override
+	public VariableAnalysisDomain merge(VariableAnalysisDomain other) {
+		// TODO: merge grammar
+		liveVariables.merge(other.liveVariables);
+		return this;
+	}
 
-    @Override
-    public VariableAnalysisDomain top() {
-        // TODO: implement a top rather than just a new domain
-        return new VariableAnalysisDomain();
-    }
+	@Override
+	public VariableAnalysisDomain top() {
+		// TODO: implement a top rather than just a new domain
+		return new VariableAnalysisDomain();
+	}
 
-    @Override
-    public VariableAnalysisDomain bottom() {
-        VariableAnalysisDomain bottom = new VariableAnalysisDomain();
-        bottom.grammar = new VariableGrammar();
-        bottom.liveVariables = new HashSet<>();
-        return bottom;
-    }
+	@Override
+	public VariableAnalysisDomain bottom() {
+		VariableAnalysisDomain bottom = new VariableAnalysisDomain();
+		bottom.grammar = new VariableGrammar();
+		bottom.liveVariables = new LiveVariableMap();
+		return bottom;
+	}
 
-    @Override
-    public int compareTo(VariableAnalysisDomain o) {
-        if (!grammar.equals(o.grammar))
-            return 1;
-        if (!liveVariables.equals(o.liveVariables))
-            return 1;
-        return 0;
-    }
+	@Override
+	public int compareTo(VariableAnalysisDomain o) {
+		if (!grammar.equals(o.grammar))
+			return 1;
+		if (!liveVariables.equals(o.liveVariables))
+			return 1;
+		return 0;
+	}
 
-    @Override
-    public VariableAnalysisDomain clone() {
-        VariableAnalysisDomain clone = bottom();
-        clone.liveVariables.addAll(liveVariables);
-        clone.grammar = grammar.clone();
-        return clone;
-    }
+	@Override
+	public VariableAnalysisDomain clone() {
+		VariableAnalysisDomain clone = bottom();
+		clone.liveVariables = liveVariables.clone();
+		clone.grammar = grammar.clone();
+		return clone;
+	}
 
 }

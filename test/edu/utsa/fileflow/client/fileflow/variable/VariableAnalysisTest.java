@@ -12,14 +12,24 @@ import org.junit.Test;
  */
 public class VariableAnalysisTest {
 
-    @Test
-    public void testAnalysis() throws Exception {
-        VariableAnalysisDomain domain = new VariableAnalysisDomain();
-        VariableAnalysis analysis = new VariableAnalysis();
-        Analyzer<VariableAnalysisDomain, VariableAnalysis> analyzer = new Analyzer<>(domain, analysis);
-        FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromScript("$x0='a';");
-        VariableAnalysisDomain result = analyzer.analyze(cfg);
-        System.out.println(result.liveVariables);
-    }
+	@Test
+	public void testAnalysis() throws Exception {
+		VariableAnalysisDomain domain = new VariableAnalysisDomain();
+		VariableAnalysis analysis = new VariableAnalysis();
+		Analyzer<VariableAnalysisDomain, VariableAnalysis> analyzer = new Analyzer<>(domain, analysis);
+		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromScript(
+				"" +
+						"$x0 = 'a';" +
+						"$x1 = 'b';" +
+						"$x2 = 'c';" +
+						"$x3 = $x0;" +
+						"$x3 = $x1;" +
+						"if (other) {" +
+						"   $x3 = $x2;" +
+						"}" +
+						"$x4 = $x3;"
+		);
+		VariableAnalysisDomain result = analyzer.analyze(cfg);
+	}
 
 }
