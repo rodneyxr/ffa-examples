@@ -3,10 +3,10 @@ package edu.utsa.fileflow.client.fileflow.variable;
 import edu.utsa.fileflow.analysis.AnalysisDomain;
 
 /**
- * Created by Rodney on 2/11/2017.
- * <p>
  * This class is analysis domain for variable analysis. It holds a grammar which
  * will track all productions and live variables in the entire program.
+ * <p>
+ * Created by Rodney on 2/11/2017.
  */
 public class VariableAnalysisDomain extends AnalysisDomain<VariableAnalysisDomain> {
 

@@ -1,14 +1,16 @@
 package edu.utsa.fileflow.client.fileflow.variable;
 
+import dk.brics.automaton.Automaton;
 import edu.utsa.fileflow.analysis.Analyzer;
 import edu.utsa.fileflow.cfg.FlowPoint;
 import edu.utsa.fileflow.utilities.FileFlowHelper;
+import edu.utsa.fileflow.utilities.GraphvizGenerator;
 import org.junit.Test;
 
 /**
- * Created by Rodney on 2/11/2017.
- * <p>
  * This class tests functionality of the variable analysis.
+ * <p>
+ * Created by Rodney on 2/11/2017.
  */
 public class VariableAnalysisTest {
 
@@ -30,6 +32,8 @@ public class VariableAnalysisTest {
 						"$x4 = $x3;"
 		);
 		VariableAnalysisDomain result = analyzer.analyze(cfg);
+//		Automaton a = result.grammar.getVariable(new Variable("$x4", 8));
+//		GraphvizGenerator.saveDOTToFile(a.toDot(), "tmp/var_analysis.dot");
 	}
 
 }

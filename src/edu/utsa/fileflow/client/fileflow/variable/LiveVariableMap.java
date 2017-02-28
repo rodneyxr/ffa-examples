@@ -7,11 +7,11 @@ import java.util.HashSet;
 import java.util.Map;
 
 /**
- * Created by Rodney on 2/18/2017.
- * <p>
  * This class is a data structure for keeping track of live variables during variable analysis.
  * A variable is live if it may be used in the future. Only live variables should be added to this
  * data structure.
+ * <p>
+ * Created by Rodney on 2/18/2017.
  */
 public class LiveVariableMap implements Cloneable, Mergeable<LiveVariableMap> {
 	private HashMap<String, HashSet<Variable>> m;

@@ -1,5 +1,6 @@
 package edu.utsa.fileflow.client.fileflow.variable;
 
+import dk.brics.automaton.Automaton;
 import edu.utsa.fileflow.analysis.Analysis;
 import edu.utsa.fileflow.analysis.AnalysisException;
 import edu.utsa.fileflow.antlr.FileFlowParser.*;
@@ -10,10 +11,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by Rodney on 2/11/2017.
- * <p>
  * This class overrides some methods that the analysis framework will call when
  * traversing the control flow graph of a script.
+ * <p>
+ * Created by Rodney on 2/11/2017.
  */
 public class VariableAnalysis extends Analysis<VariableAnalysisDomain> {
 
@@ -21,8 +22,8 @@ public class VariableAnalysis extends Analysis<VariableAnalysisDomain> {
 
 	@Override
 	public VariableAnalysisDomain onFinish(VariableAnalysisDomain domain) throws AnalysisException {
-//        System.out.println("VariableAnalysis.onFinish: " + domain.liveVariables);
 		logger.log(Level.INFO, "\nLive Variables: {0}", domain.liveVariables);
+		logger.log(Level.INFO, "\nGrammar: {0}", domain.grammar);
 		return domain;
 	}
 
@@ -35,8 +36,37 @@ public class VariableAnalysis extends Analysis<VariableAnalysisDomain> {
 	@Override
 	public VariableAnalysisDomain enterAssignment(VariableAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
 		AssignContext ctx = new AssignContext(context);
-		Variable v = new Variable(ctx.var0, context.getFlowPoint().getID());
-		domain.liveVariables.addVariable(v);
+		int id = context.getFlowPoint().getID();
+
+		Variable v0 = new Variable(ctx.var0, id);
+		domain.liveVariables.addVariable(v0);
+		domain.grammar.addNonterminal(v0);
+
+		// FIXME: this should be handled in the grammar
+		if (ctx.literal != null && ctx.var1 != null) {
+			throw new AnalysisException("literal and var1 cannot be both defined.");
+		}
+
+		// automaton production: $x0 = 'a';
+		if (ctx.literal != null) {
+			domain.grammar.addAutomatonProduction(v0, Automaton.makeString(ctx.literal));
+		} else if (ctx.var1 != null) {
+			Variable v1 = new Variable(ctx.var1, id);
+			domain.liveVariables.addVariable((v1));
+			domain.grammar.addNonterminal(v1);
+			if (ctx.var2 != null) {
+				// pair production: $x0 = $x1.$x2;
+				Variable v2 = new Variable(ctx.var2, id);
+				domain.liveVariables.addVariable((v2));
+				domain.grammar.addNonterminal(v2);
+				domain.grammar.addPairProduction(v0, v1, v2);
+			} else {
+				// unit production: $x0 = $x1;
+				domain.grammar.addUnitProduction(v0, v1);
+			}
+		}
+
+
 		return domain;
 	}
 
