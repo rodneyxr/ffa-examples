@@ -2,9 +2,7 @@ package edu.utsa.fileflow.client.fileflow.variable;
 
 import edu.utsa.fileflow.analysis.Mergeable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * This class is a data structure for keeping track of live variables during variable analysis.
@@ -14,21 +12,21 @@ import java.util.TreeSet;
  * Created by Rodney on 2/18/2017.
  */
 public class LiveVariableMap implements Cloneable, Mergeable<LiveVariableMap> {
-	private HashMap<String, TreeSet<Variable>> m;
+	private HashMap<String, Set<Variable>> m;
 
 	LiveVariableMap() {
 		m = new HashMap<>();
 	}
 
-	public Variable getVariable(String variable) {
-		TreeSet<Variable> vars = m.get(variable);
+	public Set<Variable> getVariable(String variable) {
+		Set<Variable> vars = m.get(variable);
 		if (vars == null)
 			return null;
-		return vars.first();
+		return Collections.unmodifiableSet(vars);
 	}
 
 	void addVariable(Variable variable) {
-		TreeSet<Variable> s = getOrCreate(variable.name);
+		Set<Variable> s = getOrCreate(variable.name);
 		s.clear();
 		s.add(variable);
 	}
@@ -41,8 +39,8 @@ public class LiveVariableMap implements Cloneable, Mergeable<LiveVariableMap> {
 	 * @param k The key to get or create in the HashMap.
 	 * @return the HashSet obtained by <code>k</code> or a new HashSet if one does not exist.
 	 */
-	private TreeSet<Variable> getOrCreate(String k) {
-		return m.computeIfAbsent(k, set -> new TreeSet<>());
+	private Set<Variable> getOrCreate(String k) {
+		return m.computeIfAbsent(k, set -> new HashSet<>());
 	}
 
 	@Override
@@ -53,7 +51,7 @@ public class LiveVariableMap implements Cloneable, Mergeable<LiveVariableMap> {
 
 		// add (merge) everything in other map to this map
 		other.m.forEach((k, set2) -> {
-			TreeSet<Variable> set1 = this.m.get(k);
+			Set<Variable> set1 = this.m.get(k);
 
 			// if item is only in other map
 			if (set1 == null) {
@@ -79,7 +77,7 @@ public class LiveVariableMap implements Cloneable, Mergeable<LiveVariableMap> {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{\n");
-		for (Map.Entry<String, TreeSet<Variable>> entry : m.entrySet()) {
+		for (Map.Entry<String, Set<Variable>> entry : m.entrySet()) {
 			sb.append("\t");
 			sb.append(entry.getKey());
 			sb.append(": ");
@@ -94,9 +92,6 @@ public class LiveVariableMap implements Cloneable, Mergeable<LiveVariableMap> {
 	public LiveVariableMap clone() {
 		LiveVariableMap clone = new LiveVariableMap();
 		clone.m.putAll(m);
-//		for (Map.Entry<String, TreeSet<Variable>> entry : m.entrySet()) {
-//			clone.m.put(entry.getKey(), (TreeSet<Variable>) entry.getValue().clone());
-//		}
 		return clone;
 	}
 

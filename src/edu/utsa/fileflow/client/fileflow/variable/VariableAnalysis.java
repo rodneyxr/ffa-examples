@@ -7,6 +7,7 @@ import edu.utsa.fileflow.antlr.FileFlowParser.*;
 import edu.utsa.fileflow.cfg.FlowPointContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,25 +55,32 @@ public class VariableAnalysis extends Analysis<VariableAnalysisDomain> {
 			domain.grammar.addAutomatonProduction(v0, Automaton.makeString(ctx.literal));
 		} else if (ctx.var1 != null) {
 			// get or create v1
-			Variable v1 = domain.liveVariables.getVariable(ctx.var1);
-			if (v1 == null) {
-				v1 = new Variable(ctx.var1, id);
-				domain.grammar.addNonterminal(v1);
+			Set<Variable> v1Set = domain.liveVariables.getVariable(ctx.var1);
+			if (v1Set == null) {
+				throw new AnalysisException(String.format("%s is not defined", ctx.var1));
+//				v1 = new Variable(ctx.var1, id);
+//				domain.grammar.addNonterminal(v1);
 			}
-			domain.liveVariables.addVariable((v1));
-			if (ctx.var2 != null) {
-				// pair production: $x0 = $x1.$x2;
-				// get or create v2
-				Variable v2 = domain.liveVariables.getVariable(ctx.var2);
-				if (v2 == null) {
-					v2 = new Variable(ctx.var2, id);
-					domain.grammar.addNonterminal(v2);
+
+			for (Variable v1 : v1Set) {
+				domain.liveVariables.addVariable(v1);
+				if (ctx.var2 != null) {
+					// pair production: $x0 = $x1.$x2;
+					// get or create v2
+					Set<Variable> v2Set = domain.liveVariables.getVariable(ctx.var2);
+					if (v2Set == null) {
+						throw new AnalysisException(String.format("%s is not defined", ctx.var2));
+//					v2 = new Variable(ctx.var2, id);
+//					domain.grammar.addNonterminal(v2);
+					}
+					for (Variable v2 : v2Set) {
+						domain.liveVariables.addVariable(v2);
+						domain.grammar.addPairProduction(v0, v1, v2);
+					}
+				} else {
+					// unit production: $x0 = $x1;
+					domain.grammar.addUnitProduction(v0, v1);
 				}
-				domain.liveVariables.addVariable(v2);
-				domain.grammar.addPairProduction(v0, v1, v2);
-			} else {
-				// unit production: $x0 = $x1;
-				domain.grammar.addUnitProduction(v0, v1);
 			}
 		}
 

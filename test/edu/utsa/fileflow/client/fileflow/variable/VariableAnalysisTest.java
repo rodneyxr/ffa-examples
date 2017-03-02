@@ -7,6 +7,9 @@ import edu.utsa.fileflow.utilities.FileFlowHelper;
 import edu.utsa.fileflow.utilities.GraphvizGenerator;
 import org.junit.Test;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * This class tests functionality of the variable analysis.
  * <p>
@@ -32,7 +35,7 @@ public class VariableAnalysisTest {
 						"$x4 = $x3;"
 		);
 		VariableAnalysisDomain result = analyzer.analyze(cfg);
-		Variable v = result.liveVariables.getVariable("$x3");
+		Set<Variable> v = result.liveVariables.getVariable("$x3");
 
 		Automaton a = result.grammar.getVariable(v);
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "tmp/var_analysis.dot");

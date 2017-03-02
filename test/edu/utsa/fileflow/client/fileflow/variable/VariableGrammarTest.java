@@ -4,6 +4,9 @@ import dk.brics.automaton.Automaton;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.junit.Assert.assertThat;
 
 /**
@@ -20,7 +23,9 @@ public class VariableGrammarTest {
         Variable x0 = new Variable("$x0", 0);
         g.addNonterminal(x0);
         g.addAutomatonProduction(x0, Automaton.makeString("a"));
-        Automaton a = g.getVariable(x0);
+        Set<Variable> set = new HashSet<>();
+        set.add(x0);
+        Automaton a = g.getVariable(set);
         String dot = a.toDot();
         // GraphvizGenerator.saveDOTToFile(dot, "tmp/automaton.dot");
         assertThat(dot, CoreMatchers.containsString("initial -> 0"));
