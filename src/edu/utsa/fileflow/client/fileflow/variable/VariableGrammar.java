@@ -31,7 +31,7 @@ public class VariableGrammar implements Cloneable, Mergeable<VariableGrammar> {
 	private MLFA2Automaton m2a;
 	private boolean isDirty = true; // true when the MLFA needs to be recomputed
 
-	public Nonterminal addNonterminal(Variable v) {
+	Nonterminal addNonterminal(Variable v) {
 		isDirty = true;
 		Nonterminal nonterminal = grammar.addNonterminal();
 		variables.put(v, nonterminal);
@@ -76,7 +76,6 @@ public class VariableGrammar implements Cloneable, Mergeable<VariableGrammar> {
 			m2a = new MLFA2Automaton(mlfa);
 			isDirty = false;
 		}
-		System.out.println(variables);
 		return m2a.extract(g2m.getMLFAStatePair(variables.get(v)));
 	}
 
@@ -96,8 +95,10 @@ public class VariableGrammar implements Cloneable, Mergeable<VariableGrammar> {
 
 	@Override
 	public VariableGrammar merge(VariableGrammar other) {
-		// TODO: implement this
-		return null;
+		// all references of grammar are the same object
+		variables.putAll(other.variables);
+		inserted.addAll(inserted);
+		return this;
 	}
 
 	@Override
@@ -105,18 +106,22 @@ public class VariableGrammar implements Cloneable, Mergeable<VariableGrammar> {
 		if (!(obj instanceof VariableGrammar))
 			return false;
 		VariableGrammar other = (VariableGrammar) obj;
-		return grammar.getNonterminals().equals(other.grammar.getNonterminals());
+		if (!variables.equals(other.variables))
+			return false;
+		return inserted.equals(other.inserted);
 	}
 
 	@Override
 	public String toString() {
-		return variables.toString();
+		return grammar.toString();
 	}
 
 	@Override
 	public VariableGrammar clone() {
 		VariableGrammar clone = new VariableGrammar();
-		clone.grammar = grammar.copy();
+		clone.grammar = grammar;
+		clone.variables.putAll(variables);
+		clone.inserted.addAll(inserted);
 		return clone;
 	}
 

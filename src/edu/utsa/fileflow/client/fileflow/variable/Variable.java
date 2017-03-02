@@ -3,37 +3,44 @@ package edu.utsa.fileflow.client.fileflow.variable;
 /**
  * Created by Rodney on 2/11/2017.
  * <p>
- * This class contains information about a variable such as the variable name
+ * This class contains information about a alias such as the alias name
  * and ID that is obtained from a flowpoint's unique ID.
  */
-public class Variable {
+public class Variable implements Comparable<Variable> {
 
-    final String name; // ex: "$x0" or "$x0[1]"
-    final int id; // id corresponding to flowpoint's unique ID
+	final String name; // ex: "$x0" or "$x0[1]"
+	final int id; // id corresponding to flowpoint's unique ID
 
-    private final int hashCode;
+	private final String alias;
+	private final int hashCode;
 
-    public Variable(String name, int id) {
-        this.name = name;
-        this.id = id;
-        hashCode = (name + id).hashCode();
-    }
+	public Variable(String name, int id) {
+		this.name = name;
+		this.id = id;
+		this.alias = String.format("%s{%d}", name, id);
+		hashCode = alias.hashCode();
+	}
 
-    @Override
-    public int hashCode() {
-        return hashCode;
-    }
+	@Override
+	public int compareTo(Variable other) {
+		return alias.compareTo(other.alias);
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Variable))
-            return false;
-        Variable other = (Variable) obj;
-        return name.equals(other.name) && id == other.id;
-    }
+	@Override
+	public int hashCode() {
+		return hashCode;
+	}
 
-    @Override
-    public String toString() {
-        return String.format("%s{%d}", name, id);
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Variable))
+			return false;
+		Variable other = (Variable) obj;
+		return alias.equals(other.alias);
+	}
+
+	@Override
+	public String toString() {
+		return alias;
+	}
 }

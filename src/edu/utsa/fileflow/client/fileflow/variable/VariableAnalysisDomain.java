@@ -15,7 +15,7 @@ public class VariableAnalysisDomain extends AnalysisDomain<VariableAnalysisDomai
 
 	@Override
 	public VariableAnalysisDomain merge(VariableAnalysisDomain other) {
-		// TODO: merge grammar
+		grammar.merge(other.grammar);
 		liveVariables.merge(other.liveVariables);
 		return this;
 	}

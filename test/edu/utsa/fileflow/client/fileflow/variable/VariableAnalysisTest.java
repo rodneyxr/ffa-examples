@@ -32,8 +32,10 @@ public class VariableAnalysisTest {
 						"$x4 = $x3;"
 		);
 		VariableAnalysisDomain result = analyzer.analyze(cfg);
-//		Automaton a = result.grammar.getVariable(new Variable("$x4", 8));
-//		GraphvizGenerator.saveDOTToFile(a.toDot(), "tmp/var_analysis.dot");
+		Variable v = result.liveVariables.getVariable("$x3");
+
+		Automaton a = result.grammar.getVariable(v);
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "tmp/var_analysis.dot");
 	}
 
 }
