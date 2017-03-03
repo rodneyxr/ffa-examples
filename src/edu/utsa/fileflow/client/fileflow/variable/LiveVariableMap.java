@@ -18,6 +18,12 @@ public class LiveVariableMap implements Cloneable, Mergeable<LiveVariableMap> {
 		m = new HashMap<>();
 	}
 
+	/**
+	 * Gets a read-only set of current live variables matching the variable name provided.
+	 *
+	 * @param variable The name of the variable to retrieve.
+	 * @return an unmodifiable Set of the live variables or null if variable is undefined.
+	 */
 	public Set<Variable> getVariable(String variable) {
 		Set<Variable> vars = m.get(variable);
 		if (vars == null)
@@ -91,7 +97,11 @@ public class LiveVariableMap implements Cloneable, Mergeable<LiveVariableMap> {
 	@Override
 	public LiveVariableMap clone() {
 		LiveVariableMap clone = new LiveVariableMap();
-		clone.m.putAll(m);
+		m.forEach((k, v) -> {
+			Set<Variable> s = new HashSet<>();
+			s.addAll(v);
+			clone.m.put(k, s);
+		});
 		return clone;
 	}
 

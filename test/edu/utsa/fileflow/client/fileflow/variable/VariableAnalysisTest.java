@@ -7,8 +7,7 @@ import edu.utsa.fileflow.utilities.FileFlowHelper;
 import edu.utsa.fileflow.utilities.GraphvizGenerator;
 import org.junit.Test;
 
-import java.util.List;
-import java.util.Set;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This class tests functionality of the variable analysis.
@@ -35,10 +34,27 @@ public class VariableAnalysisTest {
 						"$x4 = $x3;"
 		);
 		VariableAnalysisDomain result = analyzer.analyze(cfg);
-		Set<Variable> v = result.liveVariables.getVariable("$x3");
+		Automaton a;
 
-		Automaton a = result.grammar.getVariable(v);
+		a = result.getVariable("$x0");
+		assertTrue(a.run("a"));
+
+		a = result.getVariable("$x1");
+		assertTrue(a.run("b"));
+
+		a = result.getVariable("$x2");
+		assertTrue(a.run("c"));
+
+		a = result.getVariable("$x3");
+		assertTrue(a.run("b"));
+		assertTrue(a.run("c"));
+
+		// FIXME: result.getVariable should not rely on live variables.
+		a = result.getVariable("$x4");
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "tmp/var_analysis.dot");
+		assertTrue(a.run("b"));
+		assertTrue(a.run("c"));
+
 	}
 
 }

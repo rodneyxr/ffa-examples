@@ -8,7 +8,10 @@ import dk.brics.string.mlfa.MLFA;
 import dk.brics.string.mlfa.operations.MLFA2Automaton;
 import edu.utsa.fileflow.analysis.Mergeable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class is a wrapper for {@link dk.brics.string.grammar.Grammar}.
@@ -63,20 +66,23 @@ public class VariableGrammar implements Cloneable, Mergeable<VariableGrammar> {
 	/**
 	 * Gets the variable from the grammar as an {@link Automaton}.
 	 *
-	 * @param v The variable to get.
+	 * @param variableSet The variable to get.
 	 * @return an {@link Automaton} representing the variable
 	 */
-	public Automaton getVariable(Set<Variable> v) {
+	public Automaton getVariable(Set<Variable> variableSet) {
+		Automaton a = new Automaton();
 		Grammar2MLFA g2m = new Grammar2MLFA(grammar);
 		if (isDirty) {
 			mlfa = g2m.convert();
 			m2a = new MLFA2Automaton(mlfa);
 			isDirty = false;
 		}
-		Automaton a = new Automaton();
-		for (Variable variable : v) {
-			a = a.union(m2a.extract(g2m.getMLFAStatePair(variables.get(variable))));
-		}
+
+		for (Variable v : variableSet)
+			a = a.union(m2a.extract(g2m.getMLFAStatePair(variables.get(v))));
+		// for some reason, the extract invalidates the mlfa
+		isDirty = true;
+
 		return a;
 	}
 
@@ -121,6 +127,7 @@ public class VariableGrammar implements Cloneable, Mergeable<VariableGrammar> {
 	public VariableGrammar clone() {
 		VariableGrammar clone = new VariableGrammar();
 		clone.grammar = grammar;
+		// TODO: change putAll and addAll
 		clone.variables.putAll(variables);
 		clone.inserted.addAll(inserted);
 		return clone;

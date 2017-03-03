@@ -1,6 +1,9 @@
 package edu.utsa.fileflow.client.fileflow.variable;
 
+import dk.brics.automaton.Automaton;
 import edu.utsa.fileflow.analysis.AnalysisDomain;
+
+import java.util.Set;
 
 /**
  * This class is analysis domain for variable analysis. It holds a grammar which
@@ -12,6 +15,19 @@ public class VariableAnalysisDomain extends AnalysisDomain<VariableAnalysisDomai
 
 	VariableGrammar grammar = new VariableGrammar();
 	LiveVariableMap liveVariables = new LiveVariableMap();
+
+	/**
+	 * Gets the variable value as an automaton from the grammar.
+	 *
+	 * @param variable The variable name to get the value of.
+	 * @return an {@link Automaton} of the variable value or <code>null</code> if undefined.
+	 */
+	public Automaton getVariable(String variable) {
+		Set<Variable> v = liveVariables.getVariable(variable);
+		if (v == null)
+			return null;
+		return grammar.getVariable(v);
+	}
 
 	@Override
 	public VariableAnalysisDomain merge(VariableAnalysisDomain other) {
