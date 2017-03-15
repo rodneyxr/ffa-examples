@@ -1,6 +1,7 @@
 package edu.utsa.fileflow.client.fileflow.variable;
 
 import dk.brics.automaton.Automaton;
+import edu.utsa.fileflow.utilities.GraphvizGenerator;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
@@ -25,12 +26,11 @@ public class VariableGrammarTest {
         g.addAutomatonProduction(x0, Automaton.makeString("a"));
         Set<Variable> set = new HashSet<>();
         set.add(x0);
-        Automaton a = g.getVariable(set);
+        Automaton a = g.getVariableValue(set);
         String dot = a.toDot();
-        // GraphvizGenerator.saveDOTToFile(dot, "tmp/automaton.dot");
-        assertThat(dot, CoreMatchers.containsString("initial -> 0"));
-        assertThat(dot, CoreMatchers.containsString("0 -> 1 [label=\"a\"]"));
-        assertThat(dot, CoreMatchers.containsString("1 [shape=doublecircle,label=\"\"];"));
+//         GraphvizGenerator.saveDOTToFile(dot, "tmp/automaton.dot");
+        assertThat(dot, CoreMatchers.containsString("[label=\"a\"]"));
+        assertThat(dot, CoreMatchers.containsString("[shape=doublecircle,label=\"\"];"));
     }
 
 }

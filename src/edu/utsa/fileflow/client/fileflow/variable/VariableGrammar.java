@@ -20,20 +20,39 @@ import java.util.Set;
  */
 public class VariableGrammar implements Cloneable, Mergeable<VariableGrammar> {
 
+    /**
+     * Contains a set of FlowPoint ID's. A new ID is usually added when a new
+     * nonterminal is inserted. Checking if visited.contains(FlowPoint.id) will
+     * tell if a nonterminal for this node has been inserted in the Grammar.
+     */
+    Set<Integer> visited = new HashSet<>();
+
+    /* The JSA Grammar that this class wraps */
     private Grammar grammar = new Grammar();
 
-    // maps variables to nonterminals in the grammar
+    /* Maps variables to nonterminals in the grammar */
     private Map<Variable, Nonterminal> variables = new HashMap<>();
-    private Set<Integer> inserted = new HashSet<>();
-    public Set<Integer> visited = new HashSet<>();
 
-    /* Grammar to MLFA to Automaton */
-    private MLFA mlfa;
-    private MLFA2Automaton m2a;
-    private boolean isDirty = true; // true when the MLFA needs to be recomputed
+    /**
+     * Gets the variable's value from the grammar as an {@link Automaton}.
+     *
+     * @param variableSet The set of live variables that represent the target variable.
+     * @return an {@link Automaton} representing the variable's literal value.
+     */
+    public Automaton getVariableValue(Set<Variable> variableSet) {
+        Automaton a = new Automaton();
+        Grammar2MLFA g2m = new Grammar2MLFA(grammar);
+        MLFA mlfa = g2m.convert();
+        MLFA2Automaton m2a = new MLFA2Automaton(mlfa);
+
+        for (Variable v : variableSet) {
+            a = a.union(m2a.extract(g2m.getMLFAStatePair(variables.get(v))));
+        }
+
+        return a;
+    }
 
     Nonterminal addNonterminal(Variable v) {
-        isDirty = true;
         visited.add(v.id);
         Nonterminal nonterminal = grammar.addNonterminal(v.toString());
         variables.put(v, nonterminal);
@@ -41,75 +60,31 @@ public class VariableGrammar implements Cloneable, Mergeable<VariableGrammar> {
     }
 
     // $x0 = 'a';
-    public void addAutomatonProduction(Variable v, Automaton a) {
-        if (insert(v.id))
-            grammar.addAutomatonProduction(variables.get(v), a);
+    void addAutomatonProduction(Variable v, Automaton a) {
+        grammar.addAutomatonProduction(variables.get(v), a);
     }
 
     // $x0 = $x1;
-    public void addUnitProduction(Variable v0, Variable v1) {
-        if (insert(v0.id)) {
-            Nonterminal nt0 = variables.get(v0);
-            Nonterminal nt1 = variables.get(v1);
-            grammar.addUnitProduction(nt0, nt1);
-        }
+    void addUnitProduction(Variable v0, Variable v1) {
+        Nonterminal nt0 = variables.get(v0);
+        Nonterminal nt1 = variables.get(v1);
+        grammar.addUnitProduction(nt0, nt1);
     }
 
     // $x0 = $x1.$x2;
-    public void addPairProduction(Variable v0, Variable v1, Variable v2) {
-        if (insert(v0.id)) {
-            Nonterminal nt0 = variables.get(v0);
-            Nonterminal nt1 = variables.get(v1);
-            Nonterminal nt2 = variables.get(v2);
-            grammar.addPairProduction(nt0, nt1, nt2);
-        }
+    void addPairProduction(Variable v0, Variable v1, Variable v2) {
+        Nonterminal nt0 = variables.get(v0);
+        Nonterminal nt1 = variables.get(v1);
+        Nonterminal nt2 = variables.get(v2);
+        grammar.addPairProduction(nt0, nt1, nt2);
     }
 
     /**
-     * Gets the variable from the grammar as an {@link Automaton}.
-     *
-     * @param variableSet The variable to get.
-     * @return an {@link Automaton} representing the variable
+     * No merge implementation is necessary since there is only one instance
+     * of Grammar throughout the analysis.
      */
-    public Automaton getVariable(Set<Variable> variableSet) {
-        Automaton a = new Automaton();
-        Grammar2MLFA g2m = new Grammar2MLFA(grammar);
-        if (isDirty) {
-            mlfa = g2m.convert();
-            m2a = new MLFA2Automaton(mlfa);
-            isDirty = false;
-        }
-
-        for (Variable v : variableSet) {
-            System.out.println(variables.get(v));
-            a = a.union(m2a.extract(g2m.getMLFAStatePair(variables.get(v))));
-        }
-        // for some reason, the extract invalidates the mlfa
-        isDirty = true;
-
-        return a;
-    }
-
-    /**
-     * Inserts the ID of a variable into the inserted set. If it is not in the
-     * set it will be added and isDirty will be set to true.
-     *
-     * @param id The ID of the variable to be added to the set.
-     * @return true if the variable was inserted; false if it already exists.
-     */
-    private boolean insert(int id) {
-        boolean added = inserted.add(id);
-        if (added)
-            isDirty = true;
-        return added;
-    }
-
     @Override
     public VariableGrammar merge(VariableGrammar other) {
-        // all references of grammar are the same object
-//		variables.putAll(other.variables);
-//		inserted.addAll(other.inserted);
-//		visited.addAll(other.visited);
         return this;
     }
 
@@ -118,9 +93,7 @@ public class VariableGrammar implements Cloneable, Mergeable<VariableGrammar> {
         if (!(obj instanceof VariableGrammar))
             return false;
         VariableGrammar other = (VariableGrammar) obj;
-        if (!variables.equals(other.variables))
-            return false;
-        return inserted.equals(other.inserted);
+        return variables.equals(other.variables) && visited.equals(other.visited);
     }
 
     @Override
@@ -134,11 +107,6 @@ public class VariableGrammar implements Cloneable, Mergeable<VariableGrammar> {
         clone.grammar = grammar;
         clone.visited = visited;
         clone.variables = variables;
-        clone.inserted = inserted;
-        // TODO: change putAll and addAll
-//		clone.variables.putAll(variables);
-//		clone.inserted.addAll(inserted);
-//		clone.visited.addAll(visited);
         return clone;
     }
 

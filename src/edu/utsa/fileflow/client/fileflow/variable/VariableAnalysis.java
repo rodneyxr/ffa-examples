@@ -30,15 +30,11 @@ public class VariableAnalysis extends Analysis<VariableAnalysisDomain> {
 
     @Override
     public VariableAnalysisDomain onBefore(VariableAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
-//		System.out.println("BEFORE");
-//		System.out.println(domain.liveVariables);
         return super.onBefore(domain, context);
     }
 
     @Override
     public VariableAnalysisDomain onAfter(VariableAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
-//		System.out.println("AFTER");
-//		System.out.println(domain.liveVariables);
         return super.onAfter(domain, context);
     }
 
@@ -52,17 +48,17 @@ public class VariableAnalysis extends Analysis<VariableAnalysisDomain> {
     @Override
     public VariableAnalysisDomain enterAssignment(VariableAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
         AssignContext ctx = new AssignContext(context);
-        int id = context.getFlowPoint().getID();
+        int flowpointID = context.getFlowPoint().id;
 
-        Variable v0 = new Variable(ctx.var0, id);
+        Variable v0 = new Variable(ctx.var0, flowpointID);
         domain.liveVariables.addVariable(v0);
 
-        if (domain.grammar.visited.contains(id)) {
+        // check if this node has been visited already
+        if (domain.grammar.visited.contains(flowpointID)) {
             return domain;
         }
 
         domain.grammar.addNonterminal(v0);
-        System.out.println("After: " + domain.grammar.visited);
 
         // FIXME: this should be handled in the grammar
         if (ctx.literal != null && (ctx.var1 != null || ctx.var2 != null)) {
@@ -82,18 +78,14 @@ public class VariableAnalysis extends Analysis<VariableAnalysisDomain> {
             for (Variable v1 : v1Set) {
                 if (ctx.var2 != null) {
                     // pair production: $x0 = $x1.$x2;
-                    // get or create v2
                     Set<Variable> v2Set = domain.liveVariables.getVariable(ctx.var2);
-                    if (v2Set == null) {
+                    if (v2Set == null)
                         throw new AnalysisException(String.format("%s is not defined", ctx.var2));
-                    }
                     for (Variable v2 : v2Set) {
                         domain.grammar.addPairProduction(v0, v1, v2);
                     }
                 } else {
                     // unit production: $x0 = $x1;
-                    // DEBUG: System.out.println(String.format("%s -> %s", v0, v1));
-                    System.out.println(String.format("%s -> %s", v0, v1));
                     domain.grammar.addUnitProduction(v0, v1);
                 }
             }
@@ -112,7 +104,7 @@ public class VariableAnalysis extends Analysis<VariableAnalysisDomain> {
         final boolean isEmptyArray;
         final boolean isInput;
 
-        public AssignContext(FlowPointContext fpctx) {
+        AssignContext(FlowPointContext fpctx) {
             String $var0 = null;
             String $var1 = null;
             String $var2 = null;
