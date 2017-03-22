@@ -104,6 +104,7 @@ public class VariableAnalysisTest {
 						"}"
 		);
 		VariableAnalysisDomain result = analyzer.analyze(cfg);
+		GraphvizGenerator.saveDOTToFile(GraphvizGenerator.generateDOT(cfg), "tmp/cfg.dot");
 		// FIXME: java.lang.RuntimeException: grammar is not strongly regular
 		Automaton a = result.getVariable("$x0");
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "tmp/analysis_x0.dot");
