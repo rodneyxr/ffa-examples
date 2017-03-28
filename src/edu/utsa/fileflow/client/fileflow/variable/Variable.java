@@ -3,14 +3,18 @@ package edu.utsa.fileflow.client.fileflow.variable;
 /**
  * Created by Rodney on 2/11/2017.
  * <p>
- * This class contains information about a alias such as the alias name
- * and ID that is obtained from a flowpoint's unique ID.
+ * This class contains information about a variable such as an alias, name
+ * and ID that is obtained from a {@link edu.utsa.fileflow.cfg.FlowPoint FlowPoint's} unique ID.
  */
 public class Variable implements Comparable<Variable> {
 
-	final String name; // ex: "$x0" or "$x0[1]"
-	final int id; // id corresponding to flowpoint's unique ID
+	/* ID corresponding to the FlowPoint's unique ID */
+	public final int id;
 
+	/* ex: "$x0" or "$x0[1]" */
+	final String name;
+
+	/* String representation of this variable object */
 	private final String alias;
 	private final int hashCode;
 
