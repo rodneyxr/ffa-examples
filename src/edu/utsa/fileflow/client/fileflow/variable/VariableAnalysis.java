@@ -31,7 +31,6 @@ public class VariableAnalysis extends Analysis<VariableAnalysisDomain> {
 
 	@Override
 	public VariableAnalysisDomain onAfter(VariableAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
-//		context.getFlowPoint().setDomain(domain);
 		return super.onAfter(domain, context);
 	}
 
