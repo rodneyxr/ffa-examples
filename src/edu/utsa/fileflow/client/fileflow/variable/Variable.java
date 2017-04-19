@@ -12,7 +12,7 @@ public class Variable implements Comparable<Variable> {
 	public final int id;
 
 	/* ex: "$x0" or "$x0[1]" */
-	final String name;
+	public final String name;
 
 	/* String representation of this variable object */
 	private final String alias;

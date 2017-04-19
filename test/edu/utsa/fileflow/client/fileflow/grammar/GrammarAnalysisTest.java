@@ -164,6 +164,7 @@ public class GrammarAnalysisTest {
 		assertTrue(a.run("ab"));
 
 		a = grammarAnalysisResult.getVariable("$x1", liveVariables);
+		GraphvizGenerator.saveDOTToFile(a.toDot(), "tmp/analysis_x1.dot");
 		assertTrue(a.run("b"));
 		assertFalse(a.run("a"));
 	}

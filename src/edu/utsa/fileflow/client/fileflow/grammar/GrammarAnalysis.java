@@ -21,8 +21,7 @@ public class GrammarAnalysis extends Analysis<GrammarAnalysisDomain> {
 
 	static Logger logger = Logger.getLogger("GrammarAnalysis");
 
-	VariableAnalysisDomain vDomain;
-	GrammarAnalysisDomain gDomain;
+	private VariableAnalysisDomain vDomain;
 
 	@Override
 	public GrammarAnalysisDomain onFinish(GrammarAnalysisDomain domain) throws AnalysisException {
@@ -32,8 +31,7 @@ public class GrammarAnalysis extends Analysis<GrammarAnalysisDomain> {
 
 	@Override
 	public GrammarAnalysisDomain onBefore(GrammarAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
-		vDomain = (VariableAnalysisDomain) context.getFlowPoint().getDomain(VariableAnalysisDomain.class);
-		gDomain = (GrammarAnalysisDomain) context.getFlowPoint().getDomain(GrammarAnalysisDomain.class);
+		vDomain = (VariableAnalysisDomain) context.getFlowPoint().getOriginalDomain(VariableAnalysisDomain.class);
 		return super.onBefore(domain, context);
 	}
 
@@ -54,11 +52,11 @@ public class GrammarAnalysis extends Analysis<GrammarAnalysisDomain> {
 		int flowpointID = context.getFlowPoint().id;
 		Variable v0 = new Variable(ctx.var0, flowpointID);
 
-		// TODO: find out if this is needed
 		// check if this node has been visited already
-//		if (domain.grammar.visited.contains(flowpointID)) {
-//			return domain;
-//		}
+		if (domain.grammar.visited.contains(flowpointID)) {
+
+			return domain;
+		}
 
 		domain.grammar.addNonterminal(v0);
 
@@ -79,8 +77,10 @@ public class GrammarAnalysis extends Analysis<GrammarAnalysisDomain> {
 					if (v2Set == null)
 						throw new AnalysisException(String.format("%s is not defined", ctx.var2));
 					for (Variable v2 : v2Set) {
-						System.out.printf("%s = %s . %s\n", v0, v1, v2);
-						domain.grammar.addPairProduction(v0, v1, v2);
+						if (!v1.name.equals(v2.name) || v1.id == v2.id) {
+							System.out.printf("%s = %s . %s\n", v0, v1, v2);
+							domain.grammar.addPairProduction(v0, v1, v2);
+						}
 					}
 				} else {
 					// unit production: $x0 = $x1;
