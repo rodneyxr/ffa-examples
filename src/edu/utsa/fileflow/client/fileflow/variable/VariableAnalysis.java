@@ -5,9 +5,6 @@ import edu.utsa.fileflow.analysis.AnalysisException;
 import edu.utsa.fileflow.cfg.FlowPointContext;
 import edu.utsa.fileflow.client.AssignContext;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * This class overrides some methods that the analysis framework will call when
  * traversing the control flow graph of a script.
@@ -15,24 +12,6 @@ import java.util.logging.Logger;
  * Created by Rodney on 2/11/2017.
  */
 public class VariableAnalysis extends Analysis<VariableAnalysisDomain> {
-
-	static Logger logger = Logger.getLogger("VariableAnalysis");
-
-	@Override
-	public VariableAnalysisDomain onFinish(VariableAnalysisDomain domain) throws AnalysisException {
-		logger.log(Level.INFO, "\nLive Variables: {0}", domain.liveVariables);
-		return domain;
-	}
-
-	@Override
-	public VariableAnalysisDomain onBefore(VariableAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
-		return super.onBefore(domain, context);
-	}
-
-	@Override
-	public VariableAnalysisDomain onAfter(VariableAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
-		return super.onAfter(domain, context);
-	}
 
 	@Override
 	public VariableAnalysisDomain enterAssignment(VariableAnalysisDomain domain, FlowPointContext context) throws AnalysisException {

@@ -137,9 +137,7 @@ public class GrammarAnalysisTest {
 		createAnalyzers(cfg);
 		Automaton a;
 
-		GraphvizGenerator.saveDOTToFile(GraphvizGenerator.generateDOT(cfg), "tmp/cfg.dot");
 		a = grammarAnalysisResult.getVariable("$x0", liveVariables);
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "tmp/analysis_x0.dot");
 		assertTrue(a.run("a"));
 		assertTrue(a.run("aa"));
 	}
@@ -158,12 +156,10 @@ public class GrammarAnalysisTest {
 		Automaton a;
 
 		a = grammarAnalysisResult.getVariable("$x0", liveVariables);
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "tmp/analysis_x0.dot");
 		assertTrue(a.run("a"));
 		assertTrue(a.run("ab"));
 
 		a = grammarAnalysisResult.getVariable("$x1", liveVariables);
-		GraphvizGenerator.saveDOTToFile(a.toDot(), "tmp/analysis_x1.dot");
 		assertTrue(a.run("b"));
 		assertFalse(a.run("a"));
 	}

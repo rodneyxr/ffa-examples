@@ -9,8 +9,6 @@ import edu.utsa.fileflow.client.fileflow.variable.Variable;
 import edu.utsa.fileflow.client.fileflow.variable.VariableAnalysisDomain;
 
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This class uses a live variable set to create a grammar for file flow analysis.
@@ -19,25 +17,12 @@ import java.util.logging.Logger;
  */
 public class GrammarAnalysis extends Analysis<GrammarAnalysisDomain> {
 
-	static Logger logger = Logger.getLogger("GrammarAnalysis");
-
 	private VariableAnalysisDomain vDomain;
-
-	@Override
-	public GrammarAnalysisDomain onFinish(GrammarAnalysisDomain domain) throws AnalysisException {
-		logger.log(Level.INFO, "\nGrammar: {0}", domain.grammar);
-		return domain;
-	}
 
 	@Override
 	public GrammarAnalysisDomain onBefore(GrammarAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
 		vDomain = (VariableAnalysisDomain) context.getFlowPoint().getOriginalDomain(VariableAnalysisDomain.class);
 		return super.onBefore(domain, context);
-	}
-
-	@Override
-	public GrammarAnalysisDomain onAfter(GrammarAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
-		return super.onAfter(domain, context);
 	}
 
 	/**
@@ -54,7 +39,6 @@ public class GrammarAnalysis extends Analysis<GrammarAnalysisDomain> {
 
 		// check if this node has been visited already
 		if (domain.grammar.visited.contains(flowpointID)) {
-
 			return domain;
 		}
 
@@ -78,7 +62,6 @@ public class GrammarAnalysis extends Analysis<GrammarAnalysisDomain> {
 						throw new AnalysisException(String.format("%s is not defined", ctx.var2));
 					for (Variable v2 : v2Set) {
 						if (!v1.name.equals(v2.name) || v1.id == v2.id) {
-							System.out.printf("%s = %s . %s\n", v0, v1, v2);
 							domain.grammar.addPairProduction(v0, v1, v2);
 						}
 					}
