@@ -138,7 +138,6 @@ public class GrammarAnalysisTest {
 		Automaton a;
 
 		GraphvizGenerator.saveDOTToFile(GraphvizGenerator.generateDOT(cfg), "tmp/cfg.dot");
-		// FIXME: java.lang.RuntimeException: grammar is not strongly regular
 		a = grammarAnalysisResult.getVariable("$x0", liveVariables);
 		GraphvizGenerator.saveDOTToFile(a.toDot(), "tmp/analysis_x0.dot");
 		assertTrue(a.run("a"));

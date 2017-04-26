@@ -4,6 +4,7 @@ import dk.brics.automaton.Automaton;
 import dk.brics.string.grammar.Grammar;
 import dk.brics.string.grammar.Nonterminal;
 import dk.brics.string.grammar.operations.Grammar2MLFA;
+import dk.brics.string.grammar.operations.RegularApproximation;
 import dk.brics.string.mlfa.MLFA;
 import dk.brics.string.mlfa.operations.MLFA2Automaton;
 import edu.utsa.fileflow.analysis.Mergeable;
@@ -46,6 +47,8 @@ public class VariableGrammar implements Cloneable, Mergeable<VariableGrammar> {
 	 */
 	public Automaton getVariableValue(Set<Variable> variableSet) {
 		Automaton a = new Automaton();
+		RegularApproximation r = new RegularApproximation(grammar);
+		r.approximate(variables.values());
 		Grammar2MLFA g2m = new Grammar2MLFA(grammar);
 		MLFA mlfa = g2m.convert();
 		MLFA2Automaton m2a = new MLFA2Automaton(mlfa);
