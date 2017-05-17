@@ -1,14 +1,13 @@
 package edu.utsa.fileflow.client.fileflow;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
 import edu.utsa.fileflow.utilities.GraphvizGenerator;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class FileStructureTest {
 
@@ -81,6 +80,25 @@ public class FileStructureTest {
 		assertFalse(fs.isRegularFile(new VariableAutomaton("/file1blah")));
 	}
 
+	@Test
+	public void testRemoveFile() throws FileStructureException {
+		touch("/file1");
+		assertTrue(exists("/file1"));
+		remove("/file1");
+		save(fs.files, "tmp/result1.dot");
+		assertFalse(exists("/file1"));
+		assertTrue(exists("/"));
+
+		fs = new FileStructure();
+		mkdir("/a");
+		touch("/a/b");
+		assertTrue(exists("/a"));
+		remove("/a/b");
+		save(fs.files, "tmp/result2.dot");
+		assertFalse(exists("/a/b"));
+		assertTrue(exists("/a"));
+	}
+
 	void touch(String fp) throws FileStructureException {
 		fs.createFile(regex(fp));
 	}
@@ -91,6 +109,10 @@ public class FileStructureTest {
 
 	void copy(String src, String dest) throws FileStructureException {
 		fs.copy(new VariableAutomaton(src), new VariableAutomaton(dest));
+	}
+
+	void remove(String fp) throws FileStructureException {
+		fs.removeFile(regex(fp));
 	}
 
 	boolean exists(String fp) {

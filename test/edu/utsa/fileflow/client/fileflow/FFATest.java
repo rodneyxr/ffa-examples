@@ -83,7 +83,7 @@ public class FFATest {
 		GraphvizGenerator.saveDOTToFile(post.files.toDot(), "test/ffa/test_02.dot");
 	}
 
-	@Test
+	@Test(expected = AnalysisException.class)
 	public void testAnalysis03() throws Exception {
 		FFADriver driver = FFADriver.run("" +
 				"$x0 = 'a';" +
@@ -108,6 +108,17 @@ public class FFATest {
 		FileStructure post = driver.ffaResult.post;
 		GraphvizGenerator.saveDOTToFile(post.files.toDot(), "test/ffa/test_04.dot");
 		assertTrue(post.isRegularFile(new VariableAutomaton("/aa")));
+		assertFalse(post.fileExists(new VariableAutomaton("/a")));
+	}
+
+	@Test
+	public void testAnalysis05() throws Exception {
+		FFADriver driver = FFADriver.run("" +
+				"touch 'a';" +
+				"rm 'a';"
+		);
+		FileStructure post = driver.ffaResult.post;
+		GraphvizGenerator.saveDOTToFile(post.files.toDot(), "test/ffa/test_05.dot");
 		assertFalse(post.fileExists(new VariableAutomaton("/a")));
 	}
 

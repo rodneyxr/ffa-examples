@@ -30,8 +30,7 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 	}
 
 	@Override
-	public FileFlowAnalysisDomain touch(FileFlowAnalysisDomain domain, FlowPointContext context)
-			throws AnalysisException {
+	public FileFlowAnalysisDomain touch(FileFlowAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
 		VariableAutomaton va = getValue(domain, context, 0);
 
 		// add the automaton to the file structure
@@ -45,8 +44,7 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 	}
 
 	@Override
-	public FileFlowAnalysisDomain mkdir(FileFlowAnalysisDomain domain, FlowPointContext context)
-			throws AnalysisException {
+	public FileFlowAnalysisDomain mkdir(FileFlowAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
 		VariableAutomaton va = getValue(domain, context, 0);
 
 		// add the automaton to the file structure
@@ -60,13 +58,26 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 	}
 
 	@Override
-	public FileFlowAnalysisDomain copy(FileFlowAnalysisDomain domain, FlowPointContext context)
-			throws AnalysisException {
+	public FileFlowAnalysisDomain copy(FileFlowAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
 		VariableAutomaton v1 = getValue(domain, context, 0);
 		VariableAutomaton v2 = getValue(domain, context, 1);
 
 		try {
 			domain.post.copy(v1, v2);
+		} catch (FileStructureException e) {
+			throw new AnalysisException(e.getMessage());
+		}
+
+		return domain;
+	}
+
+	@Override
+	public FileFlowAnalysisDomain remove(FileFlowAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
+		VariableAutomaton va = getValue(domain, context, 0);
+
+		// remove the automaton from the file structure
+		try {
+			domain.post.removeFile(va);
 		} catch (FileStructureException e) {
 			throw new AnalysisException(e.getMessage());
 		}

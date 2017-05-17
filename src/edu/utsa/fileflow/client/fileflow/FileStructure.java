@@ -1,8 +1,7 @@
 /**
  * This class represents a file structure using an automaton.
- * 
- * @author Rodney Rodriguez
  *
+ * @author Rodney Rodriguez
  */
 package edu.utsa.fileflow.client.fileflow;
 
@@ -48,9 +47,8 @@ public class FileStructure implements Cloneable {
 
 	/**
 	 * Cleans a string representing a file path.
-	 * 
-	 * @param fp
-	 *            The file path to clean.
+	 *
+	 * @param fp The file path to clean.
 	 * @return a new String with the cleaned file path.
 	 */
 	public static String clean(String fp) {
@@ -63,23 +61,21 @@ public class FileStructure implements Cloneable {
 	 * Creates a file at the file path provided. Parent directory must exist for
 	 * this operation to be successful. <code>fp</code> must not represent a
 	 * directory (include a trailing slash).
-	 * 
-	 * @param fp
-	 *            The file path to create the file.
-	 * @throws FileStructureException
-	 *             if the parent directory does not exist
+	 *
+	 * @param fp The file path to create the file.
+	 * @throws FileStructureException if the parent directory does not exist
 	 */
 	public void createFile(VariableAutomaton fp) throws FileStructureException {
 		if (fp.isDirectory())
-			throw new FileStructureException(String.format("touch: cannot touch '%s': Cannot touch a directory", fp));
+			throw new FileStructureException(String.format("touch: cannot touch '%s**': Cannot touch a directory", fp));
 
 		// if the parent directory does not exist throw an exception
 		if (!fileExists(fp.getParentDirectory()))
-			throw new FileStructureException(String.format("touch: cannot touch '%s': No such file or directory", fp));
+			throw new FileStructureException(String.format("touch: cannot touch '%s**': No such file or directory", fp));
 
 		// if the file already exists, throw an exception
 		if (fileExists(fp))
-			throw new FileStructureException(String.format("touch: cannot touch '%s': File already exists", fp));
+			throw new FileStructureException(String.format("touch: cannot touch '%s**': File already exists", fp));
 
 		union(fp);
 	}
@@ -87,11 +83,9 @@ public class FileStructure implements Cloneable {
 	/**
 	 * Creates a directory in the file structure at the path provided. If the
 	 * path to that directory does not exist, it will be created.
-	 * 
-	 * @param fp
-	 *            The file path to the directory to be created.
-	 * @throws FileStructureException
-	 *             if a file already exists at <code>fp</code>.
+	 *
+	 * @param fp The file path to the directory to be created.
+	 * @throws FileStructureException if a file already exists at <code>fp</code>.
 	 */
 	public void createDirectory(VariableAutomaton fp) throws FileStructureException {
 		// if fp does not have a trailing separator, then add one
@@ -100,9 +94,29 @@ public class FileStructure implements Cloneable {
 
 		VariableAutomaton a = new VariableAutomaton(absolute(fp));
 		if (fileExists(a))
-			throw new FileStructureException(String.format("mkdir: cannot create directory '%s': File exists", a));
+			throw new FileStructureException(String.format("mkdir: cannot create directory '%s**': File exists", a));
 
 		union(fp);
+	}
+
+	/**
+	 * Removes a file from the file structure at the path provided. If the path to
+	 * the file does not exist, an exception will be thrown.
+	 *
+	 * @param fp The file path to the file to be removed.
+	 * @throws FileStructureException if the file path does not exist in the file structure.
+	 */
+	public void removeFile(VariableAutomaton fp) throws FileStructureException {
+		if (!fileExists(fp)) {
+			throw new FileStructureException(String.format("rm: cannot remove '%s**': No such file or directory", fp));
+		}
+
+		if (!fp.isDirectory()) {
+			minus(fp);
+		} else {
+			throw new FileStructureException(
+					String.format("rm: cannot remove '%s**': Attempting to remove directory without recursive option", fp));
+		}
 	}
 
 	/**
@@ -135,24 +149,21 @@ public class FileStructure implements Cloneable {
 	 * such file or directory
 	 * </ul>
 	 *
-	 * @param source
-	 *            The path pointing to the source file to copy
-	 * @param destination
-	 *            The path pointing to the destination location
+	 * @param source      The path pointing to the source file to copy
+	 * @param destination The path pointing to the destination location
 	 * @throws FileStructureException
 	 */
-	public void copy(final VariableAutomaton source, final VariableAutomaton destination)
-			throws FileStructureException {
+	public void copy(final VariableAutomaton source, final VariableAutomaton destination) throws FileStructureException {
 		boolean destExists = fileExists(destination);
 		VariableAutomaton $destination = destination;
 
 		// check if source exists
 		if (!fileExists(source))
-			throw new FileStructureException(String.format("cp: cannot stat '%s': No such file or directory", source));
+			throw new FileStructureException(String.format("cp: cannot stat '%s**': No such file or directory", source));
 
 		// check if the paths point to the same file
 		if (source.isSamePathAs(destination))
-			throw new FileStructureException(String.format("cp: '%s' and '%s' are the same file", source, source));
+			throw new FileStructureException(String.format("cp: '%s**' and '%s**' are the same file", source, source));
 
 		// cache some booleans
 		boolean destIsDir = isDirectory(destination);
@@ -164,16 +175,16 @@ public class FileStructure implements Cloneable {
 		if (!destExists) {
 			if (srcIsReg && destination.isDirectory())
 				throw new FileStructureException(
-						String.format("cp: cannot create regular file '%s': No such file or directory", destination));
+						String.format("cp: cannot create regular file '%s**': No such file or directory", destination));
 
 			VariableAutomaton destParent = destination.getParentDirectory();
 			if (!fileExists(destParent)) {
 				if (srcIsReg) {
 					throw new FileStructureException(
-							String.format("cp: cannot create file '%s': No such file or directory", destination));
+							String.format("cp: cannot create file '%s**': No such file or directory", destination));
 				} else {
 					throw new FileStructureException(
-							String.format("cp: cannot create directory '%s': No such file or directory", destination));
+							String.format("cp: cannot create directory '%s**': No such file or directory", destination));
 				}
 			}
 			// if destination does not exist then change it to the parent
@@ -185,7 +196,7 @@ public class FileStructure implements Cloneable {
 			$destination = destination.concatenate(VariableAutomaton.SEPARATOR_VA);
 		} else if (srcIsDir && destIsReg) {
 			throw new FileStructureException(
-					String.format("cp: cannot overwrite non-directory '%s' with directory '%s'", destination, source));
+					String.format("cp: cannot overwrite non-directory '%s**' with directory '%s**'", destination, source));
 		}
 
 		Automaton src = absolute(source);
@@ -235,14 +246,14 @@ public class FileStructure implements Cloneable {
 	/**
 	 * Determines whether a file exists. It does not matter if it is a directory
 	 * or regular file or possibly both.
-	 * 
-	 * @param fp
-	 *            The file path of the file to check if it exists.
+	 *
+	 * @param fp The file path of the file to check if it exists.
 	 * @return true if the file exists; false otherwise.
 	 */
 	public boolean fileExists(VariableAutomaton fp) {
 		fp = new VariableAutomaton(absolute(fp));
-		// try as a regular file
+		// try as a regular
+		// FIXME: this should not return true if fp is empty
 		fp = fp.removeLastSeparator();
 		if (fp.subsetOf(files))
 			return true;
@@ -254,9 +265,8 @@ public class FileStructure implements Cloneable {
 
 	/**
 	 * Tells if a file path is a directory in the file structure.
-	 * 
-	 * @param fp
-	 *            The file path to check if a directory exists at.
+	 *
+	 * @param fp The file path to check if a directory exists at.
 	 * @return True if a directory exists at <code>fp</code>; false otherwise.
 	 */
 	public boolean isDirectory(VariableAutomaton fp) {
@@ -267,11 +277,10 @@ public class FileStructure implements Cloneable {
 
 	/**
 	 * Tells if a file path is a regular file in the file structure.
-	 * 
-	 * @param fp
-	 *            The file path to check if a regular file exists at.
+	 *
+	 * @param fp The file path to check if a regular file exists at.
 	 * @return True if a regular file exists at <code>fp</code>; false
-	 *         otherwise.
+	 * otherwise.
 	 */
 	public boolean isRegularFile(VariableAutomaton fp) {
 		fp = new VariableAutomaton(absolute(fp));
@@ -281,7 +290,7 @@ public class FileStructure implements Cloneable {
 
 	/**
 	 * Graphviz DOT representation of this file structure.
-	 * 
+	 *
 	 * @return a Graphviz DOT representation of the files automaton.
 	 */
 	public String toDot() {
@@ -290,9 +299,8 @@ public class FileStructure implements Cloneable {
 
 	/**
 	 * Prepends the current working directory to the file path variable given.
-	 * 
-	 * @param fp
-	 *            The file path to be appended to the current working directory.
+	 *
+	 * @param fp The file path to be appended to the current working directory.
 	 * @return the absolute file path as an automaton.
 	 */
 	private Automaton absolute(VariableAutomaton fp) {
@@ -305,12 +313,31 @@ public class FileStructure implements Cloneable {
 	/**
 	 * Performs a union operation on <code>files</code>. <code>fp</code> is
 	 * converted to an absolute path before the union.
-	 * 
-	 * @param fp
-	 *            The variable automaton to union with <code>files</code>.
+	 *
+	 * @param fp The variable automaton to union with <code>files</code>.
 	 */
 	private void union(VariableAutomaton fp) {
 		files = files.union(new VariableAutomaton(absolute(fp)).getSeparatedAutomaton());
+	}
+
+	/**
+	 * Performs an intersection operation on <code>files</code>. <code>fp</code> is
+	 * converted to an absolute path before the intersection.
+	 *
+	 * @param fp The variable automaton to intersect with <code>files</code>.
+	 */
+	private void intersect(VariableAutomaton fp) {
+		files = files.intersection(new VariableAutomaton(absolute(fp)).getSeparatedAutomaton());
+	}
+
+	/**
+	 * Performs a minus operation on <code>files</code>. <code>fp</code> is
+	 * converted to an absolute path before the minus operation.
+	 *
+	 * @param fp The variable automaton to minus from <code>files</code>.
+	 */
+	private void minus(VariableAutomaton fp) {
+		files = files.minus(new VariableAutomaton(absolute(fp)).getSeparatedAutomaton());
 	}
 
 	@Override
