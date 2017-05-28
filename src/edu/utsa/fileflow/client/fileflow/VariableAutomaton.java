@@ -11,7 +11,9 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	public static final char SEPARATOR_CHAR = '/';
 	public static final Automaton SEPARATOR_AUT = Automaton.makeChar(SEPARATOR_CHAR);
 	public static final VariableAutomaton SEPARATOR_VA = new VariableAutomaton(SEPARATOR_AUT);
-	
+	public static final VariableAutomaton ANY = new VariableAutomaton(Automaton.makeAnyString());
+	public static final VariableAutomaton ANY_PATH = SEPARATOR_VA.join(ANY);
+
 	private static final Automaton ANY_STRING_AUT = Automaton.makeAnyString();
 
 	private Automaton variable;
@@ -40,11 +42,10 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	 * Joins two automatons to ensure that there is only one slash between the
 	 * join For example: 'dir1/' + '/file1' should be 'dir1/file1' instead of
 	 * 'dir1//file1'
-	 * 
-	 * @param v
-	 *            The {@link VariableAutomaton} to append to this object.
+	 *
+	 * @param v The {@link VariableAutomaton} to append to this object.
 	 * @return A new {@link VariableAutomaton} object with <code>v</code>
-	 *         concatenated.
+	 * concatenated.
 	 */
 	public VariableAutomaton concatenate(VariableAutomaton v) {
 		Automaton a = variable.concatenate(v.variable);
@@ -59,6 +60,10 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	public VariableAutomaton intersection(VariableAutomaton v) {
 		Automaton a = variable.intersection(v.variable);
 		return new VariableAutomaton(a);
+	}
+
+	public VariableAutomaton join(VariableAutomaton v) {
+		return concatenate(SEPARATOR_VA).concatenate(v);
 	}
 
 	public boolean endsWith(Automaton a) {
@@ -97,9 +102,8 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	}
 
 	/**
-	 * 
 	 * @return a clone of this automaton without the last separator if one
-	 *         exists.
+	 * exists.
 	 */
 	public VariableAutomaton removeLastSeparator() {
 		return new VariableAutomaton(Transducers.removeLastSeparator(variable));
@@ -118,7 +122,7 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 
 	/**
 	 * Sets all separators to accept states.
-	 * 
+	 *
 	 * @return the automaton with all separators as accept states.
 	 */
 	protected Automaton getSeparatedAutomaton() {
@@ -141,7 +145,7 @@ public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 	public VariableAutomaton merge(VariableAutomaton other) {
 		return union(other);
 	}
-	
+
 	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof VariableAutomaton))

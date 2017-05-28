@@ -99,6 +99,19 @@ public class FileStructureTest {
 		assertTrue(exists("/a"));
 	}
 
+	@Test
+	public void testRemoveDirectory() throws FileStructureException {
+		mkdir("/a/b/c");
+		touch("/a/b/c/d");
+		touch("/a/b/c/e");
+		touch("/a/b/c/f");
+		removeRecursive("/a/b/c/");
+		save(fs.files, "tmp/remove_directory.dot");
+		assertTrue(exists("/a/b"));
+		assertFalse(exists("/a/b/c/d"));
+		assertFalse(exists("/a/b/c"));
+	}
+
 	void touch(String fp) throws FileStructureException {
 		fs.createFile(regex(fp));
 	}
@@ -113,6 +126,10 @@ public class FileStructureTest {
 
 	void remove(String fp) throws FileStructureException {
 		fs.removeFile(regex(fp));
+	}
+
+	void removeRecursive(String fp) throws FileStructureException {
+		fs.removeFileRecursive(regex(fp));
 	}
 
 	boolean exists(String fp) {

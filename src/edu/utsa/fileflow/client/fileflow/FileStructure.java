@@ -8,6 +8,7 @@ package edu.utsa.fileflow.client.fileflow;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.FiniteStateTransducer;
 import dk.brics.automaton.TransducerTransition;
+import edu.utsa.fileflow.utilities.GraphvizGenerator;
 
 public class FileStructure implements Cloneable {
 
@@ -111,11 +112,35 @@ public class FileStructure implements Cloneable {
 			throw new FileStructureException(String.format("rm: cannot remove '%s**': No such file or directory", fp));
 		}
 
-		if (!fp.isDirectory()) {
+		if (!isDirectory(fp)) {
 			minus(fp);
 		} else {
 			throw new FileStructureException(
-					String.format("rm: cannot remove '%s**': Attempting to remove directory without recursive option", fp));
+					String.format("rm: cannot remove '%s**': attempting to remove directory without recursive option", fp));
+		}
+	}
+
+	/**
+	 * Removes a file or directory from the file structure at the path provided.
+	 * If the file is a directory, the directory and all paths under it will
+	 * be removed. If the path to the file does not exist, an exception will be thrown.
+	 *
+	 * @param fp The file path to the file or directory to be removed.
+	 * @throws FileStructureException if the file path does not exist in the file structure.
+	 */
+	public void removeFileRecursive(VariableAutomaton fp) throws FileStructureException {
+		if (!fileExists(fp)) {
+			throw new FileStructureException(String.format("rm: cannot remove '%s**': No such file or directory", fp));
+		}
+
+		if (isDirectory(fp)) {
+			// if dir, minus(fp) & minus(fp/*)
+			GraphvizGenerator.saveDOTToFile(fp.toDot(), "tmp/rmr_fp.dot");
+			GraphvizGenerator.saveDOTToFile(fp.join(VariableAutomaton.ANY_PATH).toDot(), "tmp/rmr_minus.dot");
+//			minus(fp.join(VariableAutomaton.ANY_PATH)); // FIXME: this removes the whole file structure
+//			minus(fp);
+		} else {
+			minus(fp.union(fp.join(VariableAutomaton.ANY_PATH)));
 		}
 	}
 

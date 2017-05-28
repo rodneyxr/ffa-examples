@@ -113,4 +113,17 @@ public class VariableAutomatonTest {
 		assertTrue(s0.getTransitions().isEmpty());
 	}
 
+	@Test
+	public void testJoinPaths() {
+		VariableAutomaton v1 = new VariableAutomaton("a");
+		VariableAutomaton v2 = new VariableAutomaton("b");
+		VariableAutomaton ab = v1.join(v2);
+		assertTrue(ab.isSamePathAs(new VariableAutomaton("a/b")));
+		v1 = new VariableAutomaton("/a/");
+		v2 = new VariableAutomaton("/b/");
+		ab = v1.join(v2);
+		assertTrue(ab.isSamePathAs(new VariableAutomaton("/a/b/")));
+		assertTrue(ab.isDirectory());
+	}
+
 }
