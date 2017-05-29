@@ -3,6 +3,10 @@ package edu.utsa.fileflow.client.fileflow;
 import edu.utsa.fileflow.analysis.AnalysisException;
 import edu.utsa.fileflow.analysis.Analyzer;
 import edu.utsa.fileflow.cfg.FlowPoint;
+import edu.utsa.fileflow.client.fileflow.grammar.GrammarAnalysis;
+import edu.utsa.fileflow.client.fileflow.grammar.GrammarAnalysisDomain;
+import edu.utsa.fileflow.client.fileflow.variable.VariableAnalysis;
+import edu.utsa.fileflow.client.fileflow.variable.VariableAnalysisDomain;
 import edu.utsa.fileflow.utilities.FileFlowHelper;
 import edu.utsa.fileflow.utilities.GraphvizGenerator;
 
@@ -18,12 +22,25 @@ public class FileFlowAnalysisMain {
         FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(new File(TEST_SCRIPT));
         writeDOT(cfg);
 
-        // perform prefix analysis
-        FileFlowAnalysisDomain domain = new FileFlowAnalysisDomain();
-        FileFlowAnalysis analysis = new FileFlowAnalysis();
-        Analyzer<FileFlowAnalysisDomain, FileFlowAnalysis> analyzer = new Analyzer<>(domain, analysis);
+        /* Variable Analysis */
+        VariableAnalysisDomain variableAnalysisDomain = new VariableAnalysisDomain();
+        VariableAnalysis variableAnalysis = new VariableAnalysis();
+        Analyzer<VariableAnalysisDomain, VariableAnalysis> variableAnalyzer = new Analyzer<>(variableAnalysisDomain, variableAnalysis);
+
+		/* Grammar Analysis */
+        GrammarAnalysisDomain grammarDomain = new GrammarAnalysisDomain();
+        GrammarAnalysis grammarAnalysis = new GrammarAnalysis();
+        Analyzer<GrammarAnalysisDomain, GrammarAnalysis> grammarAnalyzer = new Analyzer<>(grammarDomain, grammarAnalysis);
+
+		/* File Flow Analysis */
+        FileFlowAnalysisDomain ffaDomain = new FileFlowAnalysisDomain();
+        FileFlowAnalysis ffaAnalysis = new FileFlowAnalysis();
+        Analyzer<FileFlowAnalysisDomain, FileFlowAnalysis> ffaAnalyzer = new Analyzer<>(ffaDomain, ffaAnalysis);
+
         try {
-            analyzer.analyze(cfg);
+            variableAnalyzer.analyze(cfg);
+            grammarAnalyzer.analyze(cfg);
+            ffaAnalyzer.analyze(cfg);
         } catch (AnalysisException e) {
             e.printStackTrace();
             System.exit(1);
