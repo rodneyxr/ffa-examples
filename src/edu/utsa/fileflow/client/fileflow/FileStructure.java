@@ -135,10 +135,7 @@ public class FileStructure implements Cloneable {
 
 		if (isDirectory(fp)) {
 			// if dir, minus(fp) & minus(fp/*)
-			GraphvizGenerator.saveDOTToFile(fp.toDot(), "tmp/rmr_fp.dot");
-			GraphvizGenerator.saveDOTToFile(fp.join(VariableAutomaton.ANY_PATH).toDot(), "tmp/rmr_minus.dot");
-//			minus(fp.join(VariableAutomaton.ANY_PATH)); // FIXME: this removes the whole file structure
-//			minus(fp);
+			minus(fp.join(VariableAutomaton.ANY_PATH));
 		} else {
 			minus(fp.union(fp.join(VariableAutomaton.ANY_PATH)));
 		}
@@ -362,7 +359,7 @@ public class FileStructure implements Cloneable {
 	 * @param fp The variable automaton to minus from <code>files</code>.
 	 */
 	private void minus(VariableAutomaton fp) {
-		files = files.minus(new VariableAutomaton(absolute(fp)).getSeparatedAutomaton());
+		files = files.minus(new VariableAutomaton(absolute(fp)).getAutomaton());
 	}
 
 	@Override
