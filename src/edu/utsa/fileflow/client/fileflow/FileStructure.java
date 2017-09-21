@@ -8,7 +8,6 @@ package edu.utsa.fileflow.client.fileflow;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.FiniteStateTransducer;
 import dk.brics.automaton.TransducerTransition;
-import edu.utsa.fileflow.utilities.GraphvizGenerator;
 
 public class FileStructure implements Cloneable {
 
@@ -274,8 +273,10 @@ public class FileStructure implements Cloneable {
 	 */
 	public boolean fileExists(VariableAutomaton fp) {
 		fp = new VariableAutomaton(absolute(fp));
-		// try as a regular
-		// FIXME: this should not return true if fp is empty
+		// try as a regular file
+		// should not return true if fp is empty
+		if (fp.getAutomaton().isEmpty())
+			return false;
 		fp = fp.removeLastSeparator();
 		if (fp.subsetOf(files))
 			return true;

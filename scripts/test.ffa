@@ -1,8 +1,5 @@
-$x0 = 'a/';
-$x1 = 'b';
+$x0 = '';
+$x1 = '/a';
 $x2 = $x0.$x1;
-
-mkdir $x0;
+assert(!exists $x2);
 touch $x2;
-
-rmr $x2;

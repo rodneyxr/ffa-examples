@@ -19,6 +19,7 @@ public class FileFlowAnalysisMain {
     private static final String TEST_SCRIPT = "scripts/test.ffa";
 
     public static void main(String[] args) throws IOException {
+        Analyzer.VERBOSE = false;
         FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(new File(TEST_SCRIPT));
         writeDOT(cfg);
 
