@@ -2,6 +2,7 @@ package edu.utsa.fileflow.client.fileflow;
 
 import edu.utsa.fileflow.analysis.Analysis;
 import edu.utsa.fileflow.analysis.AnalysisException;
+import edu.utsa.fileflow.analysis.Analyzer;
 import edu.utsa.fileflow.antlr.FileFlowParser.FunctionCallContext;
 import edu.utsa.fileflow.antlr.FileFlowParser.ValueContext;
 import edu.utsa.fileflow.cfg.FlowPointContext;
@@ -17,8 +18,9 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 
 	@Override
 	public FileFlowAnalysisDomain onFinish(FileFlowAnalysisDomain domain) throws AnalysisException {
-		// write automaton to DOT file
-		GraphvizGenerator.saveDOTToFile(domain.post.toDot(), "scripts/automaton.dot");
+		// Write post and init to DOT file
+		GraphvizGenerator.saveDOTToFile(domain.post.toDot(), "scripts/post.dot");
+		GraphvizGenerator.saveDOTToFile(domain.init.toDot(), "scripts/init.dot");
 		return domain;
 	}
 
@@ -37,6 +39,11 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 		try {
 			domain.post.createFile(va);
 		} catch (FileStructureException e) {
+			if (Analyzer.CONTINUE_ON_ERROR) {
+				if (e.getMessage().contains("No such file or directory")) {
+					domain.init.forceCreate(va.getParentDirectory());
+				}
+			}
 			throw new AnalysisException(e.getMessage());
 		}
 
@@ -51,6 +58,10 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 		try {
 			domain.post.createDirectory(va);
 		} catch (FileStructureException e) {
+			if (Analyzer.CONTINUE_ON_ERROR) {
+				domain.init.forceCreate(va);
+				System.out.println(e.getMessage());
+			}
 			throw new AnalysisException(e.getMessage());
 		}
 
@@ -65,6 +76,13 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 		try {
 			domain.post.copy(v1, v2);
 		} catch (FileStructureException e) {
+			if (Analyzer.CONTINUE_ON_ERROR) {
+				// Create v1 or v2 or both?
+				if (!domain.post.fileExists(v1))
+					domain.init.forceCreate(v1);
+				if (!domain.post.fileExists(v2))
+					domain.init.forceCreate(v2);
+			}
 			throw new AnalysisException(e.getMessage());
 		}
 
@@ -79,6 +97,11 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 		try {
 			domain.post.removeFile(va);
 		} catch (FileStructureException e) {
+			if (Analyzer.CONTINUE_ON_ERROR) {
+				if (!e.getMessage().endsWith("recursive option")) {
+					domain.init.forceCreate(va);
+				}
+			}
 			throw new AnalysisException(e.getMessage());
 		}
 
@@ -93,6 +116,9 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 		try {
 			domain.post.removeFileRecursive(va);
 		} catch (FileStructureException e) {
+			if (Analyzer.CONTINUE_ON_ERROR) {
+				domain.init.forceCreate(va);
+			}
 			throw new AnalysisException(e.getMessage());
 		}
 

@@ -15,51 +15,52 @@ import java.io.IOException;
 
 public class FileFlowAnalysisMain {
 
-    public static boolean DEBUG = true;
-    private static final String TEST_SCRIPT = "scripts/test.ffa";
+	public static boolean DEBUG = true;
+	private static final String TEST_SCRIPT = "scripts/test.ffa";
 
-    public static void main(String[] args) throws IOException {
-        Analyzer.VERBOSE = false;
-        FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(new File(TEST_SCRIPT));
-        writeDOT(cfg);
+	public static void main(String[] args) throws IOException {
+		Analyzer.CONTINUE_ON_ERROR = true;
+		Analyzer.VERBOSE = false;
+		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(new File(TEST_SCRIPT));
+		writeDOT(cfg);
 
         /* Variable Analysis */
-        VariableAnalysisDomain variableAnalysisDomain = new VariableAnalysisDomain();
-        VariableAnalysis variableAnalysis = new VariableAnalysis();
-        Analyzer<VariableAnalysisDomain, VariableAnalysis> variableAnalyzer = new Analyzer<>(variableAnalysisDomain, variableAnalysis);
+		VariableAnalysisDomain variableAnalysisDomain = new VariableAnalysisDomain();
+		VariableAnalysis variableAnalysis = new VariableAnalysis();
+		Analyzer<VariableAnalysisDomain, VariableAnalysis> variableAnalyzer = new Analyzer<>(variableAnalysisDomain, variableAnalysis);
 
 		/* Grammar Analysis */
-        GrammarAnalysisDomain grammarDomain = new GrammarAnalysisDomain();
-        GrammarAnalysis grammarAnalysis = new GrammarAnalysis();
-        Analyzer<GrammarAnalysisDomain, GrammarAnalysis> grammarAnalyzer = new Analyzer<>(grammarDomain, grammarAnalysis);
+		GrammarAnalysisDomain grammarDomain = new GrammarAnalysisDomain();
+		GrammarAnalysis grammarAnalysis = new GrammarAnalysis();
+		Analyzer<GrammarAnalysisDomain, GrammarAnalysis> grammarAnalyzer = new Analyzer<>(grammarDomain, grammarAnalysis);
 
 		/* File Flow Analysis */
-        FileFlowAnalysisDomain ffaDomain = new FileFlowAnalysisDomain();
-        FileFlowAnalysis ffaAnalysis = new FileFlowAnalysis();
-        Analyzer<FileFlowAnalysisDomain, FileFlowAnalysis> ffaAnalyzer = new Analyzer<>(ffaDomain, ffaAnalysis);
+		FileFlowAnalysisDomain ffaDomain = new FileFlowAnalysisDomain();
+		FileFlowAnalysis ffaAnalysis = new FileFlowAnalysis();
+		Analyzer<FileFlowAnalysisDomain, FileFlowAnalysis> ffaAnalyzer = new Analyzer<>(ffaDomain, ffaAnalysis);
 
-        try {
-            variableAnalyzer.analyze(cfg);
-            grammarAnalyzer.analyze(cfg);
-            ffaAnalyzer.analyze(cfg);
-        } catch (AnalysisException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
+		try {
+			variableAnalyzer.analyze(cfg);
+			grammarAnalyzer.analyze(cfg);
+			ffaAnalyzer.analyze(cfg);
+		} catch (AnalysisException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
 
-    /**
-     * Generate DOT file before analysis
-     *
-     * @param cfg FlowPoint to represent entry point of the CFG
-     */
-    private static void writeDOT(FlowPoint cfg) {
-        String dot = GraphvizGenerator.generateDOT(cfg);
-        GraphvizGenerator.saveDOTToFile(dot, TEST_SCRIPT + ".cfg.dot");
-        if (FileFlowAnalysisMain.DEBUG) {
-            System.out.println("DOT file written to: 'dot/" + TEST_SCRIPT + ".dot'");
-            System.out.println();
-        }
-    }
+	/**
+	 * Generate DOT file before analysis
+	 *
+	 * @param cfg FlowPoint to represent entry point of the CFG
+	 */
+	private static void writeDOT(FlowPoint cfg) {
+		String dot = GraphvizGenerator.generateDOT(cfg);
+		GraphvizGenerator.saveDOTToFile(dot, TEST_SCRIPT + ".cfg.dot");
+		if (FileFlowAnalysisMain.DEBUG) {
+			System.out.println("DOT file written to: 'dot/" + TEST_SCRIPT + ".dot'");
+			System.out.println();
+		}
+	}
 
 }

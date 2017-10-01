@@ -5,13 +5,14 @@ import edu.utsa.fileflow.analysis.AnalysisDomain;
 public class FileFlowAnalysisDomain extends AnalysisDomain<FileFlowAnalysisDomain> {
 
 	SymbolTable table = new SymbolTable();
+	FileStructure init = new FileStructure();
 	FileStructure post = new FileStructure();
 
 	@Override
 	public FileFlowAnalysisDomain merge(FileFlowAnalysisDomain domain) {
-		// merge the symbol table
 		table = (SymbolTable) table.merge(domain.table);
-		// TODO: merge file structures
+		post = post.merge(domain.post);
+		init = init.merge(domain.init);
 		return this;
 	}
 
@@ -42,9 +43,8 @@ public class FileFlowAnalysisDomain extends AnalysisDomain<FileFlowAnalysisDomai
 	public FileFlowAnalysisDomain clone() {
 		FileFlowAnalysisDomain clone = new FileFlowAnalysisDomain();
 		clone.post = post.clone();
-		table.forEach((k, v) -> {
-			clone.table.put(k, v.clone());
-		});
+		clone.init = init.clone();
+		table.forEach((k, v) -> clone.table.put(k, v.clone()));
 		return clone;
 	}
 

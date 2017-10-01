@@ -8,8 +8,9 @@ package edu.utsa.fileflow.client.fileflow;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.FiniteStateTransducer;
 import dk.brics.automaton.TransducerTransition;
+import edu.utsa.fileflow.analysis.Mergeable;
 
-public class FileStructure implements Cloneable {
+public class FileStructure implements Cloneable, Mergeable<FileStructure> {
 
 	// automaton representing files in a file structure
 	Automaton files;
@@ -55,6 +56,18 @@ public class FileStructure implements Cloneable {
 		fp = fp.trim();
 		fp = fp.replaceAll("[/\\\\]+", "/");
 		return fp;
+	}
+
+	/**
+	 * Creates a file or directory at the path provided. This method will not throw
+	 * an exception. If a file does not exist it will forcefully be created by
+	 * creating every non-existing file in its path. If the file already exists,
+	 * then no changes will be made.
+	 *
+	 * @param fp The file path to create the file or directory at.
+	 */
+	public void forceCreate(VariableAutomaton fp) {
+		union(fp);
 	}
 
 	/**
@@ -364,13 +377,17 @@ public class FileStructure implements Cloneable {
 	}
 
 	@Override
+	public FileStructure merge(FileStructure other) {
+		files = files.union(other.files);
+		return this;
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof FileStructure))
 			return false;
 		FileStructure o = (FileStructure) obj;
-		if (!files.equals(o.files))
-			return false;
-		return true;
+		return files.equals(o.files);
 	}
 
 	@Override
@@ -379,5 +396,4 @@ public class FileStructure implements Cloneable {
 		clone.files = files.clone();
 		return clone;
 	}
-
 }
