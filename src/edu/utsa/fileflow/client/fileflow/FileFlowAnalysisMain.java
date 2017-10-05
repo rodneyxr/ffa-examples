@@ -43,6 +43,9 @@ public class FileFlowAnalysisMain {
 			variableAnalyzer.analyze(cfg);
 			grammarAnalyzer.analyze(cfg);
 			ffaAnalyzer.analyze(cfg);
+
+			// Run again
+			ffaAnalyzer.analyze(cfg);
 		} catch (AnalysisException e) {
 			e.printStackTrace();
 			System.exit(1);

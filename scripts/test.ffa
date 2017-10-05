@@ -1,5 +1,3 @@
-$x0 = '';
-$x1 = '/a';
-$x2 = $x0.$x1;
-assert(!exists $x2);
-touch $x2;
+$x0 = '/a/b/c';
+
+touch $x0;

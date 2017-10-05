@@ -16,11 +16,26 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 	private GrammarAnalysisDomain gDomain;
 	private VariableAnalysisDomain vDomain;
 
+	private int runCounter = 0;
+	private FileStructure lastInit = null;
+
+	@Override
+	public FileFlowAnalysisDomain onBegin(FileFlowAnalysisDomain domain) throws AnalysisException {
+		System.out.println("\n***** Run: " + runCounter);
+		if (lastInit != null)
+			domain.post = lastInit;
+//		if (runCounter == 1) // DEBUG
+			GraphvizGenerator.saveDOTToFile(domain.post.toDot(), "scripts/post_debug" + runCounter + ".dot");
+		return domain;
+	}
+
 	@Override
 	public FileFlowAnalysisDomain onFinish(FileFlowAnalysisDomain domain) throws AnalysisException {
 		// Write post and init to DOT file
-		GraphvizGenerator.saveDOTToFile(domain.post.toDot(), "scripts/post.dot");
-		GraphvizGenerator.saveDOTToFile(domain.init.toDot(), "scripts/init.dot");
+		GraphvizGenerator.saveDOTToFile(domain.post.toDot(), "scripts/post" + runCounter + ".dot");
+		GraphvizGenerator.saveDOTToFile(domain.init.toDot(), "scripts/init" + runCounter + ".dot");
+		lastInit = domain.init;
+		runCounter++;
 		return domain;
 	}
 
@@ -28,7 +43,7 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 	public FileFlowAnalysisDomain onBefore(FileFlowAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
 		gDomain = (GrammarAnalysisDomain) context.getFlowPoint().getDomain(GrammarAnalysisDomain.class);
 		vDomain = (VariableAnalysisDomain) context.getFlowPoint().getDomain(VariableAnalysisDomain.class);
-		return super.onBefore(domain, context);
+		return domain;
 	}
 
 	@Override
@@ -39,7 +54,7 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 		try {
 			domain.post.createFile(va);
 		} catch (FileStructureException e) {
-			if (Analyzer.CONTINUE_ON_ERROR) {
+			if (Analyzer.CONTINUE_ON_ERROR && runCounter == 0) {
 				if (e.getMessage().contains("No such file or directory")) {
 					domain.init.forceCreate(va.getParentDirectory());
 				}
@@ -58,7 +73,7 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 		try {
 			domain.post.createDirectory(va);
 		} catch (FileStructureException e) {
-			if (Analyzer.CONTINUE_ON_ERROR) {
+			if (Analyzer.CONTINUE_ON_ERROR && runCounter == 0) {
 				domain.init.forceCreate(va);
 				System.out.println(e.getMessage());
 			}
@@ -76,7 +91,7 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 		try {
 			domain.post.copy(v1, v2);
 		} catch (FileStructureException e) {
-			if (Analyzer.CONTINUE_ON_ERROR) {
+			if (Analyzer.CONTINUE_ON_ERROR && runCounter == 0) {
 				// Create v1 or v2 or both?
 				if (!domain.post.fileExists(v1))
 					domain.init.forceCreate(v1);
@@ -97,7 +112,7 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 		try {
 			domain.post.removeFile(va);
 		} catch (FileStructureException e) {
-			if (Analyzer.CONTINUE_ON_ERROR) {
+			if (Analyzer.CONTINUE_ON_ERROR && runCounter == 0) {
 				if (!e.getMessage().endsWith("recursive option")) {
 					domain.init.forceCreate(va);
 				}
@@ -116,7 +131,7 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 		try {
 			domain.post.removeFileRecursive(va);
 		} catch (FileStructureException e) {
-			if (Analyzer.CONTINUE_ON_ERROR) {
+			if (Analyzer.CONTINUE_ON_ERROR && runCounter == 0) {
 				domain.init.forceCreate(va);
 			}
 			throw new AnalysisException(e.getMessage());
