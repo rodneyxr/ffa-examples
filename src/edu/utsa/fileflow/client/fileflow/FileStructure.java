@@ -59,6 +59,13 @@ public class FileStructure implements Cloneable, Mergeable<FileStructure> {
 	}
 
 	/**
+	 * Changes the current working directory.
+	 */
+	public void changeWorkingDirectory(VariableAutomaton fp) {
+
+	}
+
+	/**
 	 * Creates a file or directory at the path provided. This method will not throw
 	 * an exception. If a file does not exist it will forcefully be created by
 	 * creating every non-existing file in its path. If the file already exists,

@@ -122,4 +122,17 @@ public class FFATest {
 		assertFalse(post.fileExists(new VariableAutomaton("/a")));
 	}
 
+
+	@Test
+	public void testAnalysis06() throws Exception {
+		FFADriver driver = FFADriver.run("" +
+				"mkdir 'a';" +
+				"cd 'a';" +
+				"touch 'b';"
+		);
+		FileStructure post = driver.ffaResult.post;
+		GraphvizGenerator.saveDOTToFile(post.files.toDot(), "test/ffa/test_06.dot");
+		assertTrue(post.isDirectory(new VariableAutomaton("/a")));
+		assertTrue(post.isRegularFile(new VariableAutomaton("/a/b")));
+	}
 }

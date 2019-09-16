@@ -2,7 +2,7 @@
   <library name="lib-ffa">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/../fileflowanalysis/lib/antlr-4.5.1-complete.jar!/" />
-      <root url="jar://$PROJECT_DIR$/../fileflowanalysis/lib/ffa-grammar-2016.12.15.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../fileflowanalysis/lib/ffa-grammar-2019.09.15.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
