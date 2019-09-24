@@ -144,6 +144,15 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 	}
 
 	@Override
+	public FileFlowAnalysisDomain changeDirectory(FileFlowAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
+		VariableAutomaton va = getValue(domain, context, 0);
+		domain.init.changeWorkingDirectory(va);
+		domain.post.changeWorkingDirectory(va);
+		// TODO: implement this method
+		return domain;
+	}
+
+	@Override
 	public FileFlowAnalysisDomain assertFunc(FileFlowAnalysisDomain domain, FlowPointContext context) throws AnalysisException {
 		FunctionCallContext ctx = (FunctionCallContext) context.getContext();
 		String s1 = null, s2 = null;

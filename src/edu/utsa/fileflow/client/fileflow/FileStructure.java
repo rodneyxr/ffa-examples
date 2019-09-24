@@ -62,7 +62,7 @@ public class FileStructure implements Cloneable, Mergeable<FileStructure> {
 	 * Changes the current working directory.
 	 */
 	public void changeWorkingDirectory(VariableAutomaton fp) {
-
+		cwd = fp.clone();
 	}
 
 	/**
@@ -401,6 +401,7 @@ public class FileStructure implements Cloneable, Mergeable<FileStructure> {
 	public FileStructure clone() {
 		FileStructure clone = new FileStructure();
 		clone.files = files.clone();
+		clone.cwd = cwd.clone();
 		return clone;
 	}
 }
