@@ -27,8 +27,6 @@ public class FFA {
     Analyzer<FileFlowAnalysisDomain, FileFlowAnalysis> ffaAnalyzer;
 
     FFA(FlowPoint cfg) {
-//        FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(new File(filepath));
-//        writeDOT(cfg);
         this.cfg = cfg;
     }
 
@@ -49,6 +47,7 @@ public class FFA {
         ffaAnalyzer = new Analyzer<>(ffaDomain, ffaAnalysis);
 
         try {
+            // TODO: Time each analyze method
             variableAnalyzer.analyze(cfg);
             grammarAnalyzer.analyze(cfg);
             ffaAnalyzer.analyze(cfg);
