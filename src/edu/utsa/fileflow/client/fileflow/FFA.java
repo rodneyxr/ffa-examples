@@ -15,16 +15,20 @@ public class FFA {
     VariableAnalysisDomain variableAnalysisDomain;
     VariableAnalysis variableAnalysis;
     Analyzer<VariableAnalysisDomain, VariableAnalysis> variableAnalyzer;
+    long variableElapsedTime = 0L;
 
     /* Grammar Analysis */
     GrammarAnalysisDomain grammarDomain;
     GrammarAnalysis grammarAnalysis;
     Analyzer<GrammarAnalysisDomain, GrammarAnalysis> grammarAnalyzer;
+    long grammarElapsedTime = 0L;
 
     /* File Flow Analysis */
     FileFlowAnalysisDomain ffaDomain;
     FileFlowAnalysis ffaAnalysis;
     Analyzer<FileFlowAnalysisDomain, FileFlowAnalysis> ffaAnalyzer;
+    long ffaElapsedTime1 = 0L;
+    long ffaElapsedTime2 = 0L;
 
     FFA(FlowPoint cfg) {
         this.cfg = cfg;
@@ -47,13 +51,22 @@ public class FFA {
         ffaAnalyzer = new Analyzer<>(ffaDomain, ffaAnalysis);
 
         try {
-            // TODO: Time each analyze method
+            long start = System.currentTimeMillis();
             variableAnalyzer.analyze(cfg);
+            variableElapsedTime = System.currentTimeMillis() - start;
+
+            start = System.currentTimeMillis();
             grammarAnalyzer.analyze(cfg);
+            grammarElapsedTime = System.currentTimeMillis() - start;
+
+            start = System.currentTimeMillis();
             ffaAnalyzer.analyze(cfg);
+            ffaElapsedTime1 = System.currentTimeMillis() - start;
 
             // Run again
+            start = System.currentTimeMillis();
             ffaAnalyzer.analyze(cfg);
+            ffaElapsedTime2 = System.currentTimeMillis() - start;
         } catch (AnalysisException e) {
             e.printStackTrace();
             System.exit(1);

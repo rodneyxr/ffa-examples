@@ -10,29 +10,51 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 public class FileFlowAnalysisMain {
-
-    public static boolean DEBUG = true;
+    private static boolean DEBUG = true;
 
     public static void main(String[] args) throws IOException {
         Analyzer.CONTINUE_ON_ERROR = true;
         Analyzer.VERBOSE = false;
 
-        File dir = new File("C:\\Users\\Rodney\\Desktop\\dockerfiles");
-        File[] files = dir.listFiles();
-        for (File file : files) {
-            if (file.toPath().toString().endsWith(".ffa")) {
-                System.out.println(file);
-                String saveDir = file.toPath().getFileName().toString().replaceAll("\\.ffa$", "");
-                FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(file);
+        // Check arguments
+        if (args.length != 1) {
+            System.err.println("usage: prog <file/directory>");
+            System.exit(1);
+        }
+        File file = new File(args[0]);
+        File[] files;
+        if (file.isDirectory()) {
+            files = file.listFiles();
+        } else {
+            files = new File[]{file};
+        }
+
+        // Make sure files were found
+        if (files == null) {
+            System.err.println("no '.ffa' files were found");
+            System.exit(1);
+        }
+        for (File f : files) {
+            if (f.toPath().toString().endsWith(".ffa")) {
+                System.out.println(f);
+                String saveDir = f.toPath().getFileName().toString().replaceAll("\\.ffa$", "");
+                FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(f);
                 writeDOT(cfg, saveDir);
                 System.out.println(saveDir);
                 FFA ffa = new FFA(cfg);
                 GraphvizGenerator.PATH_PREFIX = saveDir;
                 ffa.run();
                 GraphvizGenerator.PATH_PREFIX = "";
+
+                String timeResults = String.format("Variable analysis elapsed time: %dms\n", ffa.variableElapsedTime) +
+                        String.format("Grammar analysis elapsed time: %dms\n", ffa.grammarElapsedTime) +
+                        String.format("FFA first run elapsed time: %dms\n", ffa.ffaElapsedTime1) +
+                        String.format("FFA second run elapsed time: %dms\n", ffa.ffaElapsedTime2);
+                Files.write(Paths.get("dot", saveDir, "time.txt"), timeResults.getBytes());
+                if (FileFlowAnalysisMain.DEBUG)
+                    System.out.println(timeResults);
             }
         }
     }
