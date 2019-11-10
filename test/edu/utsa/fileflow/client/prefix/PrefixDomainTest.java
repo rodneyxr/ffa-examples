@@ -154,7 +154,7 @@ public class PrefixDomainTest {
 	 * @throws IOException
 	 * @throws AnalysisException
 	 */
-	private PrefixAnalysisDomain getResult() throws IOException, AnalysisException {
+	private PrefixAnalysisDomain getResult() throws Exception {
 		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromScript(script.toString());
 		PrefixAnalysisDomain domain = new PrefixAnalysisDomain();
 		PrefixAnalysis analysis = new PrefixAnalysis();

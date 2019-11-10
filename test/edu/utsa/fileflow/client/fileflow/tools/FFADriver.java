@@ -45,11 +45,11 @@ public class FFADriver {
 
 	private FlowPoint cfg;
 
-	private FFADriver(String script) throws IOException {
+	private FFADriver(String script) throws Exception {
 		cfg = FileFlowHelper.generateControlFlowGraphFromScript(script);
 	}
 
-	public static FFADriver run(String script) throws IOException, AnalysisException {
+	public static FFADriver run(String script) throws Exception {
 		FFADriver ffaDriver = new FFADriver(script);
 		ffaDriver.setUp();
 		ffaDriver.createAnalyzers();

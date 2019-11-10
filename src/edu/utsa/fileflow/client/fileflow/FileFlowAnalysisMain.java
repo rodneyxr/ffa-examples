@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 public class FileFlowAnalysisMain {
     private static boolean DEBUG = true;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Analyzer.CONTINUE_ON_ERROR = true;
         Analyzer.VERBOSE = false;
 
@@ -40,21 +40,25 @@ public class FileFlowAnalysisMain {
             if (f.toPath().toString().endsWith(".ffa")) {
                 System.out.println(f);
                 String saveDir = f.toPath().getFileName().toString().replaceAll("\\.ffa$", "");
-                FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(f);
-                writeDOT(cfg, saveDir);
-                System.out.println(saveDir);
-                FFA ffa = new FFA(cfg);
-                GraphvizGenerator.PATH_PREFIX = saveDir;
-                ffa.run();
-                GraphvizGenerator.PATH_PREFIX = "";
+                try {
+                    FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromFile(f);
+                    writeDOT(cfg, saveDir);
+                    System.out.println(saveDir);
+                    FFA ffa = new FFA(cfg);
+                    GraphvizGenerator.PATH_PREFIX = saveDir;
+                    ffa.run();
+                    GraphvizGenerator.PATH_PREFIX = "";
 
-                String timeResults = String.format("Variable analysis elapsed time: %dms\n", ffa.variableElapsedTime) +
-                        String.format("Grammar analysis elapsed time: %dms\n", ffa.grammarElapsedTime) +
-                        String.format("FFA first run elapsed time: %dms\n", ffa.ffaElapsedTime1) +
-                        String.format("FFA second run elapsed time: %dms\n", ffa.ffaElapsedTime2);
-                Files.write(Paths.get("dot", saveDir, "time.txt"), timeResults.getBytes());
-                if (FileFlowAnalysisMain.DEBUG)
-                    System.out.println(timeResults);
+                    String timeResults = String.format("Variable analysis elapsed time: %dms\n", ffa.variableElapsedTime) +
+                            String.format("Grammar analysis elapsed time: %dms\n", ffa.grammarElapsedTime) +
+                            String.format("FFA first run elapsed time: %dms\n", ffa.ffaElapsedTime1) +
+                            String.format("FFA second run elapsed time: %dms\n", ffa.ffaElapsedTime2);
+                    Files.write(Paths.get("dot", saveDir, "time.txt"), timeResults.getBytes());
+                    if (FileFlowAnalysisMain.DEBUG)
+                        System.out.println(timeResults);
+                } catch (Exception e) {
+                    System.err.println("error: failed to analyze " + f);
+                }
             }
         }
     }

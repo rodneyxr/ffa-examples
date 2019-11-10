@@ -152,7 +152,7 @@ public class PostfixDomainTest {
 	 * @throws IOException
 	 * @throws AnalysisException
 	 */
-	private PostfixAnalysisDomain getResult() throws IOException, AnalysisException {
+	private PostfixAnalysisDomain getResult() throws Exception {
 		FlowPoint cfg = FileFlowHelper.generateControlFlowGraphFromScript(script.toString());
 		PostfixAnalysisDomain domain = new PostfixAnalysisDomain();
 		PostfixAnalysis analysis = new PostfixAnalysis();
