@@ -11,7 +11,7 @@
       <excludeFolder url="file://$MODULE_DIR$/dot" />
       <excludeFolder url="file://$MODULE_DIR$/out" />
     </content>
-    <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="lib-analysis" level="project" />
     <orderEntry type="module-library">

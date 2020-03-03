@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact name="file-flow-grammar:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/file_flow_grammar_jar</output-path>
+    <root id="root">
+      <element id="archive" name="file-flow-grammar.jar">
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/../file-flow-grammar/bin/META-INF/MANIFEST.MF" />
+        </element>
+        <element id="module-output" name="file-flow-grammar" />
+      </element>
+      <element id="library" level="project" name="antlr-4.5.1-complete" />
+    </root>
+  </artifact>
+</component>

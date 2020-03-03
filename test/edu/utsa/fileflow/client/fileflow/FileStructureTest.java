@@ -112,6 +112,21 @@ public class FileStructureTest {
 		assertFalse(exists("/a/b/c"));
 	}
 
+	@Test
+	public void testChangeDirectory() throws FileStructureException {
+		mkdir("/a");
+		cd("/a");
+		touch("b");
+		save(fs.files, "tmp/change_directory.dot");
+		assertTrue(fs.isDirectory(new VariableAutomaton("/")));
+		assertTrue(fs.isDirectory(new VariableAutomaton("/a")));
+		assertTrue(fs.isRegularFile(new VariableAutomaton("/a/b")));
+	}
+
+	void cd(String fp) throws FileStructureException {
+		fs.changeWorkingDirectory(regex(fp));
+	}
+
 	void touch(String fp) throws FileStructureException {
 		fs.createFile(regex(fp));
 	}

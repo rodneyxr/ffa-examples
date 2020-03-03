@@ -6,6 +6,7 @@ package edu.utsa.fileflow.client.fileflow;
 import dk.brics.automaton.Automaton;
 import edu.utsa.fileflow.analysis.Mergeable;
 
+// TODO: implement isAbsolute()
 public class VariableAutomaton implements Mergeable<VariableAutomaton> {
 
 	public static final char SEPARATOR_CHAR = '/';

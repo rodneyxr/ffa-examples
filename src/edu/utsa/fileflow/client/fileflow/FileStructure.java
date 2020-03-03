@@ -9,6 +9,7 @@ import dk.brics.automaton.Automaton;
 import dk.brics.automaton.FiniteStateTransducer;
 import dk.brics.automaton.TransducerTransition;
 import edu.utsa.fileflow.analysis.Mergeable;
+import edu.utsa.fileflow.client.fileflow.variable.Variable;
 
 public class FileStructure implements Cloneable, Mergeable<FileStructure> {
 
@@ -56,6 +57,21 @@ public class FileStructure implements Cloneable, Mergeable<FileStructure> {
 		fp = fp.trim();
 		fp = fp.replaceAll("[/\\\\]+", "/");
 		return fp;
+	}
+
+	/**
+	 * Changes the current working directory.
+	 */
+	public void changeWorkingDirectory(VariableAutomaton fp) {
+		if (fp.startsWith(FileStructure.separator())) {
+			cwd = fp.clone();
+		} else {
+			cwd = new VariableAutomaton(absolute(fp));
+		}
+		// Append a slash if fp did not have one
+		if (!cwd.endsWith(VariableAutomaton.SEPARATOR_AUT)) {
+			cwd = cwd.concatenate(VariableAutomaton.SEPARATOR_VA);
+		}
 	}
 
 	/**
@@ -340,7 +356,7 @@ public class FileStructure implements Cloneable, Mergeable<FileStructure> {
 	 * @return the absolute file path as an automaton.
 	 */
 	private Automaton absolute(VariableAutomaton fp) {
-		if (fp.startsWith(cwd.getAutomaton())) {
+		if (fp.startsWith(VariableAutomaton.SEPARATOR_AUT)) {
 			return fp.getAutomaton();
 		}
 		return cwd.concatenate(fp).getAutomaton();
@@ -394,6 +410,7 @@ public class FileStructure implements Cloneable, Mergeable<FileStructure> {
 	public FileStructure clone() {
 		FileStructure clone = new FileStructure();
 		clone.files = files.clone();
+		clone.cwd = cwd.clone();
 		return clone;
 	}
 }
