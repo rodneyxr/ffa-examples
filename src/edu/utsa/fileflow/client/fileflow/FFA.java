@@ -7,6 +7,12 @@ import edu.utsa.fileflow.client.fileflow.grammar.GrammarAnalysis;
 import edu.utsa.fileflow.client.fileflow.grammar.GrammarAnalysisDomain;
 import edu.utsa.fileflow.client.fileflow.variable.VariableAnalysis;
 import edu.utsa.fileflow.client.fileflow.variable.VariableAnalysisDomain;
+import edu.utsa.fileflow.utilities.GraphvizGenerator;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class FFA {
     FlowPoint cfg;
@@ -34,7 +40,32 @@ public class FFA {
         this.cfg = cfg;
     }
 
+    void runUsingSystemPath(String systemPath) throws IOException {
+        FileStructure init = new FileStructure();
+        String prefix = "/home/user/";
+        Files.walk(Paths.get(systemPath)).forEach(x -> {
+            try {
+                if (Files.isDirectory(x)) {
+                    Path filename = x.getFileName();
+                    Path path = Paths.get(prefix, filename.toString());
+                    init.createDirectory(new VariableAutomaton(path.toString()));
+                } else {
+                    Path filename = x.getFileName();
+                    Path path = Paths.get(prefix, filename.toString());
+                    init.createFile(new VariableAutomaton(path.toString()));
+                }
+            } catch (FileStructureException e) {
+                // TODO: handle exception
+            }
+        });
+        runWithPrecondition(init);
+    }
+
     void run() {
+        runWithPrecondition(null);
+    }
+
+    void runWithPrecondition(FileStructure precondition) {
         /* Variable Analysis */
         variableAnalysisDomain = new VariableAnalysisDomain();
         variableAnalysis = new VariableAnalysis();
@@ -46,8 +77,13 @@ public class FFA {
         grammarAnalyzer = new Analyzer<>(grammarDomain, grammarAnalysis);
 
         /* File Flow Analysis */
-        ffaDomain = new FileFlowAnalysisDomain();
-        ffaAnalysis = new FileFlowAnalysis();
+        if (precondition == null) {
+            ffaDomain = new FileFlowAnalysisDomain();
+            ffaAnalysis = new FileFlowAnalysis();
+        } else {
+            ffaDomain = new FileFlowAnalysisDomain(precondition);
+            ffaAnalysis = new FileFlowAnalysis(precondition);
+        }
         ffaAnalyzer = new Analyzer<>(ffaDomain, ffaAnalysis);
 
         try {
@@ -59,9 +95,12 @@ public class FFA {
             grammarAnalyzer.analyze(cfg);
             grammarElapsedTime = System.currentTimeMillis() - start;
 
-            start = System.currentTimeMillis();
-            ffaAnalyzer.analyze(cfg);
-            ffaElapsedTime1 = System.currentTimeMillis() - start;
+            if (precondition == null) {
+                // The post-condition of the first run will be used as the pre-condition of the second run
+                start = System.currentTimeMillis();
+                ffaAnalyzer.analyze(cfg);
+                ffaElapsedTime1 = System.currentTimeMillis() - start;
+            }
 
             // Run again
             start = System.currentTimeMillis();
@@ -72,5 +111,4 @@ public class FFA {
             System.exit(1);
         }
     }
-
 }

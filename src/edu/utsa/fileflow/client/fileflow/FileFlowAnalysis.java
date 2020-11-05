@@ -22,6 +22,16 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
     private FileStructure lastInit = null;
     private int runCounter = 0;
 
+    public FileFlowAnalysis() {
+        super();
+    }
+
+    public FileFlowAnalysis(FileStructure precondition) {
+        super();
+        lastInit = precondition;
+        runCounter = 1;
+    }
+
     @Override
     public FileFlowAnalysisDomain onBegin(FileFlowAnalysisDomain domain, FlowPoint flowPoint) throws AnalysisException {
         System.out.println("\n***** Run: " + runCounter);
