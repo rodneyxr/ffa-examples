@@ -93,6 +93,7 @@ public class FileFlowAnalysisMain {
                     if (FileFlowAnalysisMain.DEBUG)
                         System.out.println(timeResults);
                 } catch (Exception e) {
+                    e.printStackTrace();
                     System.err.println("error: failed to analyze " + f);
                 }
             }

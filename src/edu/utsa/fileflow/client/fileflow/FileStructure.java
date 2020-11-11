@@ -99,7 +99,7 @@ public class FileStructure implements Cloneable, Mergeable<FileStructure> {
 			throw new FileStructureException(String.format("touch: cannot touch '%s**': Cannot touch a directory", fp));
 
 		// if the parent directory does not exist throw an exception
-		if (!fileExists(fp.getParentDirectory()))
+		if (!fileExists(new VariableAutomaton(absolute(fp)).getParentDirectory()))
 			throw new FileStructureException(String.format("touch: cannot touch '%s**': No such file or directory", fp));
 
 		// if the file already exists, throw an exception

@@ -7,7 +7,6 @@ import edu.utsa.fileflow.client.fileflow.grammar.GrammarAnalysis;
 import edu.utsa.fileflow.client.fileflow.grammar.GrammarAnalysisDomain;
 import edu.utsa.fileflow.client.fileflow.variable.VariableAnalysis;
 import edu.utsa.fileflow.client.fileflow.variable.VariableAnalysisDomain;
-import edu.utsa.fileflow.utilities.GraphvizGenerator;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -40,24 +39,23 @@ public class FFA {
         this.cfg = cfg;
     }
 
-    void runUsingSystemPath(String systemPath) throws IOException {
+    void runUsingSystemPath(String filepath) throws IOException {
         FileStructure init = new FileStructure();
         String prefix = "/home/user/";
-        Files.walk(Paths.get(systemPath)).forEach(x -> {
-            try {
-                if (Files.isDirectory(x)) {
-                    Path filename = x.getFileName();
-                    Path path = Paths.get(prefix, filename.toString());
-                    init.createDirectory(new VariableAutomaton(path.toString()));
-                } else {
-                    Path filename = x.getFileName();
-                    Path path = Paths.get(prefix, filename.toString());
-                    init.createFile(new VariableAutomaton(path.toString()));
-                }
-            } catch (FileStructureException e) {
-                // TODO: handle exception
-            }
+        Path systemPath = Paths.get(filepath);
+        String rootPath = systemPath.toString().replace(systemPath.getParent().toString(), prefix) + "/";
+
+        // Iterate through each file under the provided system path
+        Files.walk(systemPath).forEach(x -> {
+            String newpath = x.toString().replace(systemPath.getParent().toString(), prefix);
+            if (Files.isDirectory(x))
+                newpath += "/";
+            VariableAutomaton va = new VariableAutomaton(newpath);
+            init.forceCreate(va);
         });
+
+        // Set the root path for the ffa script
+        init.changeWorkingDirectory(new VariableAutomaton(rootPath));
         runWithPrecondition(init);
     }
 
