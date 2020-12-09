@@ -48,6 +48,13 @@ public class FFA {
         // Iterate through each file under the provided system path
         Files.walk(systemPath).forEach(x -> {
             String newpath = x.toString().replace(systemPath.getParent().toString(), prefix);
+            String[] levels = newpath.replace(prefix, "").split("[/\\\\]");
+            if (levels.length > 3) {
+                if (levels[2].equals(".git")) {
+                    return;
+                }
+            }
+
             if (Files.isDirectory(x))
                 newpath += "/";
             VariableAutomaton va = new VariableAutomaton(newpath);

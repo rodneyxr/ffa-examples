@@ -176,6 +176,9 @@ public class FileFlowAnalysis extends Analysis<FileFlowAnalysisDomain> {
 
         if (s1.equals("exists")) {
             VariableAutomaton va = domain.table.get(s2);
+            if (va == null) {
+                va = new VariableAutomaton(s2);
+            }
             boolean exists = domain.post.fileExists(va);
             if (!exists) {
                 System.out.printf("WARNING: '%s**' does not exist\n", va);
